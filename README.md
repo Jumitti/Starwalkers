@@ -1,4 +1,6 @@
+Telegram bot to play @ Starwalkers
 
+TTYL to use it correctly
 
 To make the program work correctly, you need to create a folder and place all files in this folder.
 
