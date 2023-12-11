@@ -109,7 +109,14 @@ def handle(msg):
                         f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
         bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions')
 
-    if command == '/restart':
+    if command == '/all_user':
+        if chat_id == chat_id_owner:
+            user_folder = "./user"
+            filtered_files = [file.split('.')[0] for file in os.listdir(user_folder) if
+                              "_fight" not in file and file.endswith(".txt")]
+            bot.sendMessage(chat_id_owner, filtered_files)
+
+    elif command == '/restart':
         try:
             del save_tree_choice[chat_id]
         except KeyError:
