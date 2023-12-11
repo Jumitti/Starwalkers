@@ -115,6 +115,18 @@ def handle(msg):
             filtered_files = [file.split('.')[0] for file in os.listdir(user_folder) if
                               "_fight" not in file and file.endswith(".txt")]
             bot.sendMessage(chat_id_owner, filtered_files)
+    elif command == '/command_bot':
+        if chat_id == chat_id_owner:
+            bot.sendMessage(chat_id_key,
+                            "/case_menu - Buy/open cases\n"
+                            "/buy_case - Buy cases (10$ per case)\n"
+                            "/open_case - Open cases\n"
+                            "/collection - List of your ships\n"
+                            "/sell_ship - Sell ship. Earn money\n"
+                            "/fight - Enter on the battlefield\n"
+                            "/exit - Leave any actions\n"
+                            "/restart - Ne beef ? Restart the game\n"
+                            "/help - A little reminder")
 
     elif command == '/restart':
         try:
