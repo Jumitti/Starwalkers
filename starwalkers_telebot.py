@@ -117,7 +117,7 @@ def handle(msg):
             bot.sendMessage(chat_id_owner, filtered_files)
     elif command == '/command_bot':
         if chat_id == chat_id_owner:
-            bot.sendMessage(chat_id_key,
+            bot.sendMessage(chat_id_owner,
                             "/case_menu - Buy/open cases\n"
                             "/buy_case - Buy cases (10$ per case)\n"
                             "/open_case - Open cases\n"
