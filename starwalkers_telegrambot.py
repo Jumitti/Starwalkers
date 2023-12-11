@@ -1,12 +1,12 @@
-import random
+import json
 import os
+import random
 import re
 import time
-from datetime import datetime
+
 import telepot
 from telepot.loop import MessageLoop
-import json
-import requests
+
 # import termcolor
 # from termcolor import colored, cprint
 from func import roll, got_let_int, get_int_ship, get_d_sym, get_cost
@@ -17,10 +17,6 @@ with open(secrets_path, 'r') as secrets_file:
     secrets = json.load(secrets_file)
 
 chat_id_owner = secrets['id_owner']
-money = 30
-user_case = 0
-ship_list = []
-enemy_list = []
 
 save_tree_choice = {}
 save_leaf_choice = {}
@@ -76,8 +72,6 @@ def handle(msg):
         for j in range(len(file_cont_fight)):
             enemy_list.append(re.sub(r"\n", "", file_cont_fight[j]))
         filename_fight.close()
-        print(f"My ships {ship_list}")
-        print(f"Enemy {enemy_list}")
 
     except FileNotFoundError:
         bot.sendMessage(chat_id, 'WELCOME TO STARWALKERS!')
@@ -110,8 +104,9 @@ def handle(msg):
             enemy_list.append(re.sub(r"\n", "", file_cont_fight[j]))
         filename_fight.close()
 
-        print("Registered:", chat_id)
-        bot.sendMessage(chat_id, "Menu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
+        # print("Registered:", chat_id)
+        bot.sendMessage(chat_id,
+                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
         bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions')
 
     if command == '/restart':
@@ -156,7 +151,9 @@ def handle(msg):
         for zzz in range(len(ship_list)):
             time.sleep(0.1)
             display_ship_list += f'{str(zzz + 1)}) {str(ship_list[zzz])} {get_d_sym(get_cost(ship_list[zzz]))}\n'
-        bot.sendMessage(chat_id, f"Your collection of ships:\n{display_ship_list}\nIf you want to /sell_ship")
+        bot.sendMessage(chat_id, f"Your collection of ships:\n{display_ship_list}"
+                                 f"\nEarn ships by /buy_case and /open_case"
+                                 f"\nEarn money by /sell_ship and /fight")
 
     elif command == '/sell_ship':
         try:
@@ -183,7 +180,8 @@ def handle(msg):
             del save_tree_choice[chat_id]
         except KeyError:
             pass
-        bot.sendMessage(chat_id, "Menu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
+        bot.sendMessage(chat_id,
+                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
 
     elif command == '/godmode':
         try:
@@ -195,6 +193,42 @@ def handle(msg):
         ship_list = []
         save(chat_id, money, user_case, ship_list)
         bot.sendMessage(chat_id, "God mode activated, you have 1000000$, 1000000 cases but no ship")
+
+    elif command == '/help':
+        try:
+            del save_tree_choice[chat_id]
+        except KeyError:
+            pass
+        bot.sendMessage(chat_id,
+                        'WELCOME TO STARWALKERS!\nVersion: 0.2\n\n'
+                        "Starwalkers is a seemingly simple game where mistakes can cost you dearly. Start your adventure with $30 and buy your first ships. It's time to fight! Can you be the winner?\n\n"
+
+                        "Expand your fleet with /case_menu:\n"
+                        "  • /buy_case allows you to buy $10 cases containing a random ship\n"
+                        "  • /open_case allows you to open the crates\n\n"
+
+                        "Organize your fleet with /collection:\n"
+                        "   • /collection allows you to keep an eye on your ships and their statistics\n"
+                        "   • /sell_ship allows you to sell a ship\n"
+                        'The boats are named "Q-9191" where Q can be any letters from A to Z and 9191 a number between 0000 and 9999.\n'
+                        "Cost and rank depend on letter and number. The higher the letter (example: A) and/or the number (example: 9999), the higher the cost and rank. The rank has a visual way of interpretation: $ to $$$$$.\n"
+                        "Be careful, during combat it is the rank that counts and not the visual way of representing it.\n\n"
+
+                        "Go to war with /fight:\n"
+                        "You will fight randomly from 1 to 3 enemy boats. You can't choose your opponent so choose your boat wisely to fight.\n"
+                        "Intuitively, the higher your ship's rank, the more likely it is to win. For example if your ship is A-9999 and it is fighting against Z-0000. You will win because your rank is higher than that of your opponent.\n"
+                        "Be careful, during combat it is the rank that counts and not the visual way of representing it.\n"
+                        "Ships take damage during combat and lose ranks\n\n"
+
+                        "Some tips:\n"
+                        "Don't worry about saving, it's automatic and individual. No one can mess with your game.\n"
+                        "You can exit any actions at any time with /exit\n"
+                        "No more money, no more cash, no more ship, in short, is it over? No, you can use /restart\n"
+                        "Lost ? use /help to see all our commands and tips\n\n"
+                        
+                        "Credit:\n"
+                        "Game by Gametoy20: https://github.com/Gametoy20\n"
+                        'Telegram bot by Jumitti: https://github.com/Jumitti')
 
     else:
         if branch != 0 and leaf == 0:
@@ -248,19 +282,21 @@ def branch_to_leaf(chat_id, command, chat_id_save, branch, leaf, money, user_cas
             for en_i1 in range(len(enemy_list)):
                 bot.sendMessage(chat_id, str(en_i1 + 1) + ". " + enemy_list[en_i1])
                 time.sleep(0.8)
-        print(f"Enemy set {enemy_list}")
-        save_fight(chat_id, enemy_list)
-        bot.sendMessage(chat_id,
-                        f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
-        display_ship_list = ""
-        for i_non in range(len(ship_list)):
-            display_ship_list += f"{str(i_non + 1)}) {ship_list[i_non]} {str(get_d_sym(get_cost(ship_list[i_non])))}\n"
-        bot.sendMessage(chat_id,
-                        f'Choose your ship to attack:\n{display_ship_list}\n/exit or 0 to leave the battlefield')
+            save_fight(chat_id, enemy_list)
+            bot.sendMessage(chat_id,
+                            f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
+            display_ship_list = ""
+            for i_non in range(len(ship_list)):
+                display_ship_list += f"{str(i_non + 1)}) {ship_list[i_non]} {str(get_d_sym(get_cost(ship_list[i_non])))}\n"
+            bot.sendMessage(chat_id,
+                            f'Choose your ship to attack:\n{display_ship_list}\n/exit or 0 to leave the battlefield')
 
-        leaf = 1
-        del save_tree_choice[chat_id]
-        tree_choice(chat_id, branch, leaf)
+            leaf = 1
+            del save_tree_choice[chat_id]
+            tree_choice(chat_id, branch, leaf)
+        else:
+            bot.sendMessage(chat_id,
+                            f"You don't have ships.\n/buy_case and /open_case to get ships")
 
 
 def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list, enemy_list):
@@ -271,7 +307,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                 money -= 10 * number
                 user_case += number
                 bot.sendMessage(chat_id,
-                                f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} cases.\n\n/exit buying case.")
+                                f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} cases.\n\n/open_case to earn ship\n/exit buying case.")
                 save(chat_id, money, user_case, ship_list)
             else:
                 bot.sendMessage(chat_id, "Not enough money, bro. Try to /sell_ship or /fight\n\n/exit buying case.")
@@ -355,7 +391,9 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                     pass
                 enemy_list = []
                 save_fight(chat_id, enemy_list)
-                bot.sendMessage(chat_id, "Menu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
+                bot.sendMessage(chat_id,
+                                f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
+
             else:
                 bot.sendMessage(chat_id, "You do not have ship with choosed number.")
             if player_cost != 0 and enemy_cost != 0:
@@ -389,6 +427,8 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                             del save_tree_choice[chat_id]
                         except KeyError:
                             pass
+                        bot.sendMessage(chat_id,
+                                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
 
                 else:
                     bot.sendMessage(chat_id, "You've lost your ship! Be careful next time!")
@@ -400,6 +440,9 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                             del save_tree_choice[chat_id]
                         except KeyError:
                             pass
+                        bot.sendMessage(chat_id,
+                                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
+
                     else:
                         display_ship_list = ""
                         for zzz in range(len(ship_list)):
@@ -411,6 +454,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
             bot.sendMessage(chat_id, "Please use number.")
 
 
+# Initializing bot
 bot = telepot.Bot(secrets['token'])
 MessageLoop(bot, {'chat': handle}).run_as_thread()
 print('StarWalkers_telegrambot online')
