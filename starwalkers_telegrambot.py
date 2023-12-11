@@ -39,10 +39,10 @@ def save(chat_id, money, user_case, ship_list):
 
 def save_fight(chat_id, enemy_list):
     chat_id_save = str(chat_id) + "_fight.txt"
-    filename_fight = open(f"./user/{chat_id_fight_save}", "w")
+    filename_fight = open(f"./user/{chat_id_save}", "w")
     for k in range(len(enemy_list)):
-        filename.write(enemy_list[k - 1] + '\n')
-    filename.close()
+        filename_fight.write(enemy_list[k] + '\n')
+    filename_fight.close()
 
 
 def handle(msg):
@@ -71,13 +71,13 @@ def handle(msg):
             ship_list.append(re.sub(r"\n", "", file_cont[j + 2]))
         filename.close()
 
-        print(f"test {ship_list}")
-
         filename_fight = open(f"./user/{chat_id_fight_save}", "r")
         file_cont_fight = filename_fight.readlines()
-        for j in range(len(file_cont_fight) - 2):
-            enemy_list.append(re.sub(r"\n", "", file_cont_fight[j + 2]))
+        for j in range(len(file_cont_fight)):
+            enemy_list.append(re.sub(r"\n", "", file_cont_fight[j]))
         filename_fight.close()
+        print(f"My ships {ship_list}")
+        print(f"Enemy {enemy_list}")
 
     except FileNotFoundError:
         bot.sendMessage(chat_id, 'WELCOME TO STARWALKERS!')
@@ -106,8 +106,8 @@ def handle(msg):
 
         filename_fight = open(f"./user/{chat_id_fight_save}", "r")
         file_cont_fight = filename_fight.readlines()
-        for j in range(len(file_cont_fight) - 2):
-            enemy_list.append(re.sub(r"\n", "", file_cont_fight[j + 2]))
+        for j in range(len(file_cont_fight)):
+            enemy_list.append(re.sub(r"\n", "", file_cont_fight[j]))
         filename_fight.close()
 
         print("Registered:", chat_id)
@@ -127,7 +127,7 @@ def handle(msg):
         save_fight(chat_id, enemy_list)
         bot.sendMessage(chat_id, "Party restarted, you have 30$, 0 case, no ship and no enemy")
 
-    if command == '/case_menu':
+    elif command == '/case_menu':
         try:
             del save_tree_choice[chat_id]
         except KeyError:
@@ -183,8 +183,6 @@ def handle(msg):
             del save_tree_choice[chat_id]
         except KeyError:
             pass
-        enemy_list = []
-        save_fight(chat_id, enemy_list)
         bot.sendMessage(chat_id, "Menu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
 
     elif command == '/godmode':
@@ -203,7 +201,7 @@ def handle(msg):
             branch_to_leaf(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list)
 
         elif branch != 0 and leaf != 0:
-            leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list)
+            leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list, enemy_list)
 
 
 def tree_choice(chat_id, branch, leaf):
@@ -248,22 +246,24 @@ def branch_to_leaf(chat_id, command, chat_id_save, branch, leaf, money, user_cas
         if len(enemy_list) != 0 and len(ship_list) != 0:
             bot.sendMessage(chat_id, "Your enemies:")
             for en_i1 in range(len(enemy_list)):
-                bot.sendMessage(chat_id, str(en_i1 + 1) + ". " + enemy_list[en_i1 - 1])
+                bot.sendMessage(chat_id, str(en_i1 + 1) + ". " + enemy_list[en_i1])
                 time.sleep(0.8)
-            bot.sendMessage(chat_id,
-                            f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
-            display_ship_list = ""
-            for i_non in range(len(ship_list)):
-                display_ship_list += f"{str(i_non + 1)}) {ship_list[i_non]} {str(get_d_sym(get_cost(ship_list[i_non])))}\n"
-            bot.sendMessage(chat_id,
-                            f'Choose your ship to attack:\n{display_ship_list}\n/exit or 0 to leave the battlefield')
+        print(f"Enemy set {enemy_list}")
+        save_fight(chat_id, enemy_list)
+        bot.sendMessage(chat_id,
+                        f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
+        display_ship_list = ""
+        for i_non in range(len(ship_list)):
+            display_ship_list += f"{str(i_non + 1)}) {ship_list[i_non]} {str(get_d_sym(get_cost(ship_list[i_non])))}\n"
+        bot.sendMessage(chat_id,
+                        f'Choose your ship to attack:\n{display_ship_list}\n/exit or 0 to leave the battlefield')
 
         leaf = 1
         del save_tree_choice[chat_id]
         tree_choice(chat_id, branch, leaf)
 
 
-def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list):
+def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list, enemy_list):
     if branch == 1 and leaf == 1:  # Buy case
         if command.isdigit():
             number = int(command)
@@ -274,9 +274,9 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                                 f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} cases.\n\n/exit buying case.")
                 save(chat_id, money, user_case, ship_list)
             else:
-                bot.sendMessage(chat_id, "Not enough money, bro.\n\n/exit buying case.")
+                bot.sendMessage(chat_id, "Not enough money, bro. Try to /sell_ship or /fight\n\n/exit buying case.")
         else:
-            bot.sendMessage(chat_id, "Please use number")
+            bot.sendMessage(chat_id, "Please use number or /exit")
 
     elif branch == 1 and leaf == 2:  # Open case
         if command.isdigit():
@@ -284,7 +284,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
             if user_case >= 1 and len(ship_list) < 10:
                 if number + len(ship_list) > 10:
                     number = 10 - len(ship_list)
-                    bot.sendMessage(chat_id, f"Only 10 ships is allowed. {number} will be purchased.")
+                    bot.sendMessage(chat_id, f"Only 10 ships is allowed. {number} case(s) will be opened.")
 
                 for i in range(1, number + 1):
                     user_case -= 1
@@ -297,13 +297,19 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                     save(chat_id, money, user_case, ship_list)
 
                 bot.sendMessage(chat_id,
-                                f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} ship(s).\n\n/exit opening case.")
+                                f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} ship(s)."
+                                f"\n\nSee your ship(s) in /collection"
+                                f"\n\n Earn money by /sell_fight or /fight"
+                                f"\n\n/exit opening case.")
 
             elif len(ship_list) == 10:
                 bot.sendMessage(chat_id,
                                 "You have too many ships. /sell_ship and you can open cases again.\n\n/exit opening case.")
+            elif user_case == 0:
+                bot.sendMessage(chat_id,
+                                "You don't have case. /buy_case\n\n/exit opening case.")
         else:
-            bot.sendMessage(chat_id, "Please use number")
+            bot.sendMessage(chat_id, "Please use number or /exit")
 
     elif branch == 2 and leaf == 1:  # Selling ship
         if command.isdigit():
@@ -325,14 +331,15 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
             except KeyError:
                 bot.sendMessage(chat_id, "Ship not found.\n\n/exit selling ship.")
         else:
-            bot.sendMessage(chat_id, "Please use number")
+            bot.sendMessage(chat_id, "Please use number or /exit")
 
     elif branch == 3 and leaf == 1:  # FIGHT !
         if command.isdigit():
-            user_input = command
+            print(f"Enemy fight {enemy_list}")
+            user_input = int(command)
             player_cost = 0
             enemy_cost = 0
-            if len(ship_list) >= int(user_input) > 0:
+            if len(ship_list) >= user_input > 0:
                 player_ship = ship_list[user_input - 1]
                 player_let, player_int = player_ship.split("-")
                 ship_list.pop(user_input - 1)
@@ -340,7 +347,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
 
                 enemy_ship = enemy_list[0]
                 enemy_cost = get_cost(enemy_ship)
-            elif int(user_input) == 0:
+            elif user_input == 0:
                 bot.sendMessage(chat_id, "You left the battlefield.")
                 try:
                     del save_tree_choice[chat_id]
