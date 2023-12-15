@@ -37,14 +37,22 @@ No more money, no more cash, no more ship, in short, is it over? No, you can use
 Lost ? use ``/help`` to see all our commands and tips
 
 ## For moding and test with your own TelegramBot 
-1. Extract ```starwalkers_telebot.zip``` where you want → [Release]()
+1. Install [Telepot](https://github.com/nickoala/telepot):
+    ```
+    pip install telepot
+    ```
+    (For Raspberry only) Install [gpiozero](https://gpiozero.readthedocs.io/en/latest/):
+    ```
+    pip install gpiozero
+    ```
+2. Extract ```starwalkers_telebot.zip``` where you want → [Release]()
    - (For Raspberry) Don't forget to give all permissions at ```starwalkers_telebot``` folder:
      - In ```starwalkers_telebot``` folder, open a terminal:
      ```
      sudo 777 starwalkers_telebot.py
      sudo 777 SECRETS.py
      ```
-2. Config ```SECRETS.json``` in ```starwalkers_telebot``` folder
+3. Config ```SECRETS.json``` in ```starwalkers_telebot``` folder
 
    - How to get your **ID**:
      - send ```/getid``` to [myidbot](https://telegram.me/myidbot) on [Telegram](https://web.telegram.org/k/)
@@ -56,12 +64,12 @@ Lost ? use ``/help`` to see all our commands and tips
        - Get API token with ```/mybots```, select your bot and get API token
        - Copy/paste your token in ```SECRETS.json``` between (') or (")
      - Don't forget to send ```/start``` at your Telegram bot
-3. Run ```starwalkers_telebot.py```:
+4. Run ```starwalkers_telebot.py```:
    - In ```starwalkers_telebot``` folder, open a terminal:
      ```
      python3 starwalkers_telebot.py
      ```
-4. That all folks ! You can talk with you Chatbot and play @ Starwalkers🎉
+5. That all folks ! You can talk with you Chatbot and play @ Starwalkers🎉
 
 ## Credit:
 Game by Gametoy20: https://github.com/Gametoy20
