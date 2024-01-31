@@ -18,6 +18,10 @@ with open(secrets_path, 'r') as secrets_file:
 
 chat_id_owner = secrets['id_owner']
 
+settings_path = os.path.join(script_directory, 'settings.json')
+with open(settings_path, 'r') as settings_files:
+    settings = json.load(settings_files)
+
 save_tree_choice = {}
 save_leaf_choice = {}
 case_menu_list = ['/buy_case', '/open_case']
@@ -80,7 +84,7 @@ def handle(msg):
         time.sleep(0.8)
         bot.sendMessage(chat_id, 'Create save...')
         filename = open(f"./user/{chat_id_save}", "w")
-        filename.write("30\n")
+        filename.write(f"{settings['starting_money']}\n")
         filename.write("0\n")
         filename.write("")
         filename.close()
@@ -133,7 +137,7 @@ def handle(msg):
             del save_tree_choice[chat_id]
         except KeyError:
             pass
-        money = 30
+        money = settings['starting_money']
         user_case = 0
         ship_list = []
         enemy_list = []
@@ -291,7 +295,7 @@ def branch_to_leaf(chat_id, command, chat_id_save, branch, leaf, money, user_cas
 
     elif branch == 3:  # Fight
         enemy_list = []
-        enemy_rand = random.randint(1, 3)
+        enemy_rand = random.randint(settings['min_enemy'], settings['max_enemy'])
         for en_i in range(enemy_rand):
             roll_en = roll()
             enemy_list.append(roll_en)
@@ -322,8 +326,8 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
     if branch == 1 and leaf == 1:  # Buy case
         if command.isdigit():
             number = int(command)
-            if money >= 10 * number:
-                money -= 10 * number
+            if money >= settings['cost_case'] * number:
+                money -= settings['cost_case'] * number
                 user_case += number
                 bot.sendMessage(chat_id,
                                 f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} cases.\n\n/open_case to earn ship\n/exit buying case.")
@@ -336,9 +340,9 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
     elif branch == 1 and leaf == 2:  # Open case
         if command.isdigit():
             number = int(command)
-            if user_case >= 1 and len(ship_list) < 10:
-                if number + len(ship_list) > 10:
-                    number = 10 - len(ship_list)
+            if user_case >= 1 and len(ship_list) < settings['ship_fleet']:
+                if number + len(ship_list) > settings['ship_fleet']:
+                    number = settings['ship_fleet'] - len(ship_list)
                     bot.sendMessage(chat_id, f"Only 10 ships is allowed. {number} case(s) will be opened.")
 
                 for i in range(1, number + 1):
