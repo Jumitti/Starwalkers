@@ -2,7 +2,7 @@
 Starwalkers is a seemingly simple game where mistakes can cost you dearly. Start your adventure with $30 and buy your first ships. It's time to fight! Can you be the winner?
 
 ## Where to play ?
-On Telegram directly. Add: [STARWALKERS_bot](https://telegram.me/starwalkers_bot)
+On Telegram directly. Add: [STARWALKERS_bot](https://t.me/StarWalkersBot)
 
 ## How to play ?
 ### Expand your fleet with ``/case_menu``:
