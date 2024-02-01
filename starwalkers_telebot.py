@@ -20,7 +20,6 @@ with open(secrets_path, 'r') as secrets_file:
 chat_id_owner = secrets['id_owner']
 
 save_tree_choice = {}
-save_leaf_choice = {}
 case_menu_list = ['/buy_case', '/open_case']
 
 
@@ -32,22 +31,22 @@ def settings_file():
         return settings
 
 
-def save(chat_id, money, user_case, ship_list):
-    chat_id_save = str(chat_id) + ".txt"
-    filename = open(f"./user/{chat_id_save}", "w")
-    filename.write(str(money) + "\n")
-    filename.write(str(user_case) + "\n")
-    for k in range(len(ship_list)):
-        filename.write(ship_list[k] + "\n")
-    filename.close()
+def save_json(chat_id, money, user_case, ship_list, enemy_list):
+    ID_info = {
+        "ID": chat_id,
+        "money": money,
+        "user_case": user_case,
+        "ship_list": ship_list,
+        "enemy_list": enemy_list
+    }
+    with open(f"user/{chat_id}.json", "w") as save_file:
+        json.dump(ID_info, save_file, indent=2)
 
 
-def save_fight(chat_id, enemy_list):
-    chat_id_save = str(chat_id) + "_fight.txt"
-    filename_fight = open(f"./user/{chat_id_save}", "w")
-    for k in range(len(enemy_list)):
-        filename_fight.write(enemy_list[k] + '\n')
-    filename_fight.close()
+def load_json(chat_id):
+    with open(f"user/{chat_id}.json", "r") as save_file:
+        ID_info = json.load(save_file)
+    return ID_info
 
 
 def handle(msg):
@@ -70,62 +69,33 @@ def handle(msg):
         branch = save_tree_choice[chat_id]['branch']
         leaf = save_tree_choice[chat_id]['leaf']
     except KeyError:
-        branch = '0'
-        leaf = '0'
+        branch = 0
+        leaf = 0
 
     chat_id_save = str(chat_id) + ".txt"
     chat_id_fight_save = str(chat_id) + "_fight.txt"
 
     try:
-        ship_list = []
-        enemy_list = []
-        filename = open(f"./user/{chat_id_save}", "r")
-        file_cont = filename.readlines()
-        lines = len(filename.readlines())
-        money = int(re.sub(r"\n", "", file_cont[0]))
-        user_case = int(re.sub(r"\n", "", file_cont[1]))
-        for j in range(len(file_cont) - 2):
-            ship_list.append(re.sub(r"\n", "", file_cont[j + 2]))
-        filename.close()
-
-        filename_fight = open(f"./user/{chat_id_fight_save}", "r")
-        file_cont_fight = filename_fight.readlines()
-        for j in range(len(file_cont_fight)):
-            enemy_list.append(re.sub(r"\n", "", file_cont_fight[j]))
-        filename_fight.close()
+        ID_info = load_json(chat_id)
+        money = ID_info['money']
+        user_case = ID_info['user_case']
+        ship_list = ID_info['ship_list']
+        enemy_list = ID_info['enemy_list']
 
     except FileNotFoundError:
         bot.sendMessage(chat_id, 'WELCOME TO STARWALKERS!')
         time.sleep(0.8)
-        bot.sendMessage(chat_id, 'Version: 0.2')
+        bot.sendMessage(chat_id, f'Version: {settings["version"]}')
         time.sleep(0.8)
         bot.sendMessage(chat_id, 'Create save...')
-        filename = open(f"./user/{chat_id_save}", "w")
-        filename.write(f"{settings['starting_money']}\n")
-        filename.write("0\n")
-        filename.write("")
-        filename.close()
-
-        filename_fight = open(f"./user/{chat_id_fight_save}", "w")
-        filename_fight.close()
+        save_json(chat_id, settings['starting_money'], 0, [], [])
+        ID_info = load_json(chat_id)
+        money = ID_info['money']
+        user_case = ID_info['user_case']
+        ship_list = ID_info['ship_list']
+        enemy_list = ID_info['enemy_list']
         bot.sendMessage(chat_id, 'Save created')
 
-        filename = open(f"./user/{chat_id_save}", "r")
-        file_cont = filename.readlines()
-        lines = len(filename.readlines())
-        money = int(re.sub(r"\n", "", file_cont[0]))
-        user_case = int(re.sub(r"\n", "", file_cont[1]))
-        for j in range(len(file_cont) - 2):
-            ship_list.append(re.sub(r"\n", "", file_cont[j + 2]))
-        filename.close()
-
-        filename_fight = open(f"./user/{chat_id_fight_save}", "r")
-        file_cont_fight = filename_fight.readlines()
-        for j in range(len(file_cont_fight)):
-            enemy_list.append(re.sub(r"\n", "", file_cont_fight[j]))
-        filename_fight.close()
-
-        # print("Registered:", chat_id)
         bot.sendMessage(chat_id,
                         f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
         bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions', reply_markup=custom_keyboard)
@@ -158,9 +128,8 @@ def handle(msg):
         user_case = 0
         ship_list = []
         enemy_list = []
-        save(chat_id, money, user_case, ship_list)
-        save_fight(chat_id, enemy_list)
-        bot.sendMessage(chat_id, "Party restarted, you have 30$, 0 case, no ship and no enemy")
+        save_json(chat_id, settings['starting_money'], 0, [], [])
+        bot.sendMessage(chat_id, f"Party restarted, you have {settings['starting_money']}$, 0 case, no ship and no enemy")
 
     elif command == '/case_menu':
         try:
@@ -234,7 +203,7 @@ def handle(msg):
         money = 1000000
         user_case = 1000000
         ship_list = []
-        save(chat_id, money, user_case, ship_list)
+        save_json(chat_id, 1000000, 1000000, [], [])
         bot.sendMessage(chat_id, "God mode activated, you have 1000000$, 1000000 cases but no ship")
 
     elif command == '/help':
@@ -243,7 +212,7 @@ def handle(msg):
         except KeyError:
             pass
         bot.sendMessage(chat_id,
-                        'WELCOME TO STARWALKERS!\nVersion: 0.2\n\n'
+                        f'WELCOME TO STARWALKERS!\nVersion: {settings["version"]}\n\n'
                         "Starwalkers is a seemingly simple game where mistakes can cost you dearly. Start your adventure with $30 and buy your first ships. It's time to fight! Can you be the winner?\n\n"
 
                         "Expand your fleet with /case_menu:\n"
@@ -321,13 +290,13 @@ def branch_to_leaf(chat_id, command, chat_id_save, branch, leaf, money, user_cas
         for en_i in range(enemy_rand):
             roll_en = roll()
             enemy_list.append(roll_en)
-        save_fight(chat_id, enemy_list)
+        save_json(chat_id, money, user_case, ship_list, enemy_list)
         if len(enemy_list) != 0 and len(ship_list) != 0:
             bot.sendMessage(chat_id, "Your enemies:")
             for en_i1 in range(len(enemy_list)):
                 bot.sendMessage(chat_id, str(en_i1 + 1) + ". " + enemy_list[en_i1])
                 time.sleep(0.8)
-            save_fight(chat_id, enemy_list)
+            save_json(chat_id, money, user_case, ship_list, enemy_list)
             bot.sendMessage(chat_id,
                             f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
             display_ship_list = ""
@@ -354,7 +323,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                 user_case += number
                 bot.sendMessage(chat_id,
                                 f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} cases.\n\n/open_case to earn ship\n/exit buying case.")
-                save(chat_id, money, user_case, ship_list)
+                save_json(chat_id, money, user_case, [], [])
             else:
                 bot.sendMessage(chat_id, "Not enough money, bro. Try to /sell_ship or /fight\n\n/exit buying case.")
         else:
@@ -382,7 +351,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                     cost = (got_let_int(gotter_letter) * int(gotter_int)) // 1000
                     bot.sendMessage(chat_id,
                                     f"You got: {gotter} ! It costs: {str(cost)}$ and its rank: {get_d_sym(cost)} !")
-                    save(chat_id, money, user_case, ship_list)
+                    save_json(chat_id, money, user_case, ship_list, [])
 
                 bot.sendMessage(chat_id,
                                 f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} ship(s)."
@@ -407,7 +376,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                 s_name = ship_list[number - 1]
                 ship_list.pop(number - 1)
                 money += s_cost
-                save(chat_id, money, user_case, ship_list)
+                save_json(chat_id, money, user_case, ship_list, [])
                 bot.sendMessage(chat_id,
                                 f"Money: {money}$ | Case(s): {user_case}\nYour ship {str(s_name)} was sold and you got {str(s_cost)}$ !")
                 display_ship_list = ""
@@ -442,7 +411,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                 except KeyError:
                     pass
                 enemy_list = []
-                save_fight(chat_id, enemy_list)
+                save_json(chat_id, money, user_case, ship_list, enemy_list)
                 bot.sendMessage(chat_id,
                                 f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
 
@@ -461,8 +430,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                                     "Your ship has taken " + str(damage) + " damage. Now it is " + str(new_ship) + ".")
                     money += enemy_cost // 2
                     enemy_list.pop(0)
-                    save(chat_id, money, user_case, ship_list)
-                    save_fight(chat_id, enemy_list)
+                    save_json(chat_id, money, user_case, ship_list, enemy_list)
                     try:
                         bot.sendMessage(chat_id,
                                         f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
@@ -484,8 +452,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
 
                 else:
                     bot.sendMessage(chat_id, "You've lost your ship! Be careful next time!")
-                    save(chat_id, money, user_case, ship_list)
-                    save_fight(chat_id, enemy_list)
+                    save_json(chat_id, money, user_case, ship_list, enemy_list)
                     if len(ship_list) == 0:
                         bot.sendMessage(chat_id, "Battle is finished. You loose all your ships.")
                         try:
@@ -510,7 +477,7 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
 bot = telepot.Bot(secrets['token'])
 MessageLoop(bot, {'chat': handle}).run_as_thread()
 print('StarWalkers_telegrambot online')
-bot.sendMessage(chat_id_owner, 'StarWalkers_telegrambot online')
+bot.sendMessage(chat_id_owner, 'StarWalkers online')
 
 while True:
     pass

@@ -1,4 +1,5 @@
 {
+  "version": "0.3beta",
   "starting_money": 100,
   "cost_case": 10,
   "ship_fleet": 10,
