@@ -6,6 +6,7 @@ import time
 
 import telepot
 from telepot.loop import MessageLoop
+from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 # import termcolor
 # from termcolor import colored, cprint
@@ -18,13 +19,17 @@ with open(secrets_path, 'r') as secrets_file:
 
 chat_id_owner = secrets['id_owner']
 
-settings_path = os.path.join(script_directory, 'settings.json')
-with open(settings_path, 'r') as settings_files:
-    settings = json.load(settings_files)
-
 save_tree_choice = {}
 save_leaf_choice = {}
 case_menu_list = ['/buy_case', '/open_case']
+
+
+def settings_file():
+    settings_path = os.path.join(script_directory, 'settings.json')
+    with open(settings_path, 'r') as settings_files:
+        settings = json.load(settings_files)
+
+        return settings
 
 
 def save(chat_id, money, user_case, ship_list):
@@ -46,8 +51,20 @@ def save_fight(chat_id, enemy_list):
 
 
 def handle(msg):
+    settings = settings_file()
+
     chat_id = msg['chat']['id']
     command = msg['text']
+
+    buttons = [
+        [KeyboardButton(text='/case_menu'),
+         KeyboardButton(text='/collection')],
+        [KeyboardButton(text='/fight'),
+         KeyboardButton(text='/exit')],
+        [KeyboardButton(text='/help')]
+    ]
+
+    custom_keyboard = ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
 
     try:
         branch = save_tree_choice[chat_id]['branch']
@@ -111,7 +128,7 @@ def handle(msg):
         # print("Registered:", chat_id)
         bot.sendMessage(chat_id,
                         f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
-        bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions')
+        bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions', reply_markup=custom_keyboard)
 
     if command == '/all_user':
         if chat_id == chat_id_owner:
@@ -150,6 +167,7 @@ def handle(msg):
             del save_tree_choice[chat_id]
         except KeyError:
             pass
+
         bot.sendMessage(chat_id, "What do you want to do with cases?\n1. /buy_case\n2. /open_case\n")
         branch = 1
         leaf = 0
@@ -203,8 +221,10 @@ def handle(msg):
             del save_tree_choice[chat_id]
         except KeyError:
             pass
+
         bot.sendMessage(chat_id,
-                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
+                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help",
+                        reply_markup=custom_keyboard)
 
     elif command == '/godmode':
         try:
@@ -248,7 +268,7 @@ def handle(msg):
                         "You can exit any actions at any time with /exit\n"
                         "No more money, no more cash, no more ship, in short, is it over? No, you can use /restart\n"
                         "Lost ? use /help to see all our commands and tips\n\n"
-                        
+
                         "Credit:\n"
                         "Game by Gametoy20: https://github.com/Gametoy20\n"
                         'Telegram bot by Jumitti: https://github.com/Jumitti')
@@ -266,10 +286,12 @@ def tree_choice(chat_id, branch, leaf):
 
 
 def branch_to_leaf(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list):
+    settings = settings_file()
     if branch == 1:  # Case menu
         if command.isdigit() or command in case_menu_list:
             if command == '1' or command == '/buy_case':  # Buy case
-                bot.sendMessage(chat_id, f"Money: {money}$ | Case(s): {user_case}\nBuy how many cases ? (10$ per case)")
+                bot.sendMessage(chat_id,
+                                f"Money: {money}$ | Case(s): {user_case}\nBuy how many cases ? ({settings['cost_case']}$ per case)")
                 leaf = 1
                 del save_tree_choice[chat_id]
                 tree_choice(chat_id, branch, leaf)
@@ -323,6 +345,7 @@ def branch_to_leaf(chat_id, command, chat_id_save, branch, leaf, money, user_cas
 
 
 def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, ship_list, enemy_list):
+    settings = settings_file()
     if branch == 1 and leaf == 1:  # Buy case
         if command.isdigit():
             number = int(command)
@@ -342,10 +365,16 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
             number = int(command)
             if user_case >= 1 and len(ship_list) < settings['ship_fleet']:
                 if number + len(ship_list) > settings['ship_fleet']:
-                    number = settings['ship_fleet'] - len(ship_list)
-                    bot.sendMessage(chat_id, f"Only 10 ships is allowed. {number} case(s) will be opened.")
+                    if number > user_case:
+                        number = user_case
+                        bot.sendMessage(chat_id,
+                                        f"Only {number} case(s) will be opened.")
+                    else:
+                        number = settings['ship_fleet'] - len(ship_list)
+                        bot.sendMessage(chat_id,
+                                    f"Only {settings['ship_fleet']} ships is allowed. {number} case(s) will be opened.")
 
-                for i in range(1, number + 1):
+                for i in range(0, number):
                     user_case -= 1
                     gotter = roll()
                     ship_list.append(gotter)
@@ -358,13 +387,13 @@ def leaf_output(chat_id, command, chat_id_save, branch, leaf, money, user_case, 
                 bot.sendMessage(chat_id,
                                 f"Money: {money}$ | Case(s): {user_case}\nThanks for buying {number} ship(s)."
                                 f"\n\nSee your ship(s) in /collection"
-                                f"\n\n Earn money by /sell_fight or /fight"
+                                f"\n\n Earn money by /sell_ship or /fight"
                                 f"\n\n/exit opening case.")
 
-            elif len(ship_list) == 10:
+            elif len(ship_list) == settings['ship_fleet']:
                 bot.sendMessage(chat_id,
                                 "You have too many ships. /sell_ship and you can open cases again.\n\n/exit opening case.")
-            elif user_case == 0:
+            elif user_case <= 0:
                 bot.sendMessage(chat_id,
                                 "You don't have case. /buy_case\n\n/exit opening case.")
         else:
