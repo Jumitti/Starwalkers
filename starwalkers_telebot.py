@@ -165,12 +165,8 @@ def handle(msg):
 
     elif command in ['/collection', '🚀 Collection/Fleet']:
         tree_choice(chat_id)
-        display_ship_list = ""
-        for zzz in range(len(ship_list)):
-            time.sleep(0.1)
-            display_ship_list += f'{str(zzz + 1)}) {str(ship_list[zzz])} {get_d_sym(get_cost(ship_list[zzz]))}\n'
-        bot.sendMessage(chat_id, f"Your collection of ships:\n{display_ship_list}"
-                                 f"\nEarn ships by /buy_case and /open_case"
+        bot.sendMessage(chat_id, f"Your collection of ships:", reply_markup=KB.ship_list_button(ship_list))
+        bot.sendMessage(chat_id, f"\nEarn ships by /buy_case and /open_case"
                                  f"\nEarn money by /sell_ship and /fight", reply_markup=KB.main_keyboard())
 
     elif command in ['/sell_ship', '🫱🏽‍🫲🏽 Sell ship']:
@@ -256,13 +252,8 @@ def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
                             reply_markup=KB.main_keyboard())
 
     elif branch == 2:  # Collection and selling
-        display_ship_list = ""
-        for zzz in range(len(ship_list)):
-            time.sleep(0.1)
-            display_ship_list += f'{str(zzz + 1)}) {str(ship_list[zzz])} {get_d_sym(get_cost(ship_list[zzz]))}\n'
         bot.sendMessage(chat_id,
-                        f"Your collection of ships:\n{display_ship_list}\nSell by input the number of the ship",
-                        reply_markup=KB.main_keyboard())
+                        f"Choose your ship to sell:", reply_markup=KB.ship_list_button(ship_list))
         tree_choice(chat_id, branch, 1)
 
     elif branch == 3:  # Fight
@@ -280,12 +271,9 @@ def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
             save_json(chat_id, enemy_list=enemy_list)
             bot.sendMessage(chat_id,
                             f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
-            display_ship_list = ""
-            for i_non in range(len(ship_list)):
-                display_ship_list += f"{str(i_non + 1)}) {ship_list[i_non]} {str(get_d_sym(get_cost(ship_list[i_non])))}\n"
             bot.sendMessage(chat_id,
-                            f'Choose your ship to attack:\n{display_ship_list}\n/exit or 0 to leave the battlefield',
-                            reply_markup=KB.main_keyboard())
+                            f'Choose your ship to attack:', reply_markup=KB.ship_list_button(ship_list))
+            bot.sendMessage(chat_id, '/exit to leave the battlefield', reply_markup=KB.main_keyboard())
             tree_choice(chat_id, branch, 1)
         else:
             bot.sendMessage(chat_id,
@@ -295,6 +283,92 @@ def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
         bot.sendMessage(chat_id,
                         f"What is you nickname ?", reply_markup=KB.main_keyboard())
         tree_choice(chat_id, branch, 1)
+
+
+def on_callback_query(msg):
+    query_id, chat_id, query_data = telepot.glance(msg, flavor='callback_query')
+    branch = save_tree_choice[chat_id]['branch']
+    leaf = save_tree_choice[chat_id]['leaf']
+
+    ID_info = load_json(chat_id)
+    money = ID_info['money']
+    user_case = ID_info['user_case']
+    ship_list = ID_info['ship_list']
+    enemy_list = ID_info['enemy_list']
+
+    if branch != 2 and leaf != 1:
+        bot.answerCallbackQuery(query_id, text=f"{query_data} is a nice ship")
+        bot.sendMessage(chat_id, f"{query_data} is a nice ship")
+
+    elif branch == 2 and leaf == 1:
+        s_cost = get_cost(query_data) // 2
+        ship_list.remove(query_data)
+        money += s_cost
+        save_json(chat_id, money=money, ship_list=ship_list)
+        bot.answerCallbackQuery(query_id, text=f"Ship {query_data} sold 💲💲💲")
+        bot.sendMessage(chat_id,
+                        f"Money: {money}$ | Case(s): {user_case}\nYour ship {query_data} was sold and you got {s_cost}$ !")
+        bot.sendMessage(chat_id,
+                        f"Choose your ship to sell:", reply_markup=KB.ship_list_button(ship_list))
+        bot.sendMessage(chat_id,
+                        f'/exit selling ship.', reply_markup=KB.main_keyboard())
+
+    elif branch == 3 and leaf == 1:
+        player_cost = 0
+        enemy_cost = 0
+        player_ship = query_data
+        player_let, player_int = player_ship.split("-")
+        player_cost = get_cost(player_ship)
+
+        enemy_ship = enemy_list[0]
+        enemy_cost = get_cost(enemy_ship)
+        if player_cost != 0 and enemy_cost != 0:
+            if player_cost > enemy_cost:
+                bot.sendMessage(chat_id, f"You won and got: {enemy_cost // 2}$ !")
+                damage = random.randint(0, 30)
+                time_player_int = int(player_int)
+                fin_player_int = time_player_int - damage
+                player_int = get_int_ship(fin_player_int)
+                new_ship = str(player_let) + str(player_int)
+                ship_list.remove(player_ship)
+                ship_list.append(new_ship)
+                bot.sendMessage(chat_id,
+                                f"Your ship has taken {damage} damage. Now it is {new_ship}.")
+                money += enemy_cost // 2
+                enemy_list.remove(enemy_ship)
+                save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list)
+                if len(enemy_list) > 0:
+                    bot.answerCallbackQuery(query_id, text=f"Enemy ship {enemy_ship} destroy 🏅")
+                    bot.sendMessage(chat_id,
+                                    f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
+                    bot.sendMessage(chat_id,
+                                    f'Choose your ship to attack:', reply_markup=KB.ship_list_button(ship_list))
+                    bot.sendMessage(chat_id, '/exit to leave the battlefield', reply_markup=KB.main_keyboard())
+                else:
+                    bot.sendMessage(chat_id, f"Battle is finished ! Congratulation !")
+                    bot.answerCallbackQuery(query_id, text=f"Battle won 🏆")
+                    tree_choice(chat_id)
+                    bot.sendMessage(chat_id,
+                                    f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help",
+                                    reply_markup=KB.main_keyboard())
+
+            else:
+                ship_list.remove(player_ship)
+                bot.sendMessage(chat_id, "You've lost your ship! Be careful next time!")
+                save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list)
+                if len(ship_list) == 0:
+                    bot.sendMessage(chat_id, "Battle is finished. You loose all your ships.")
+                    bot.answerCallbackQuery(query_id, text=f"Battle failed 💥")
+                    tree_choice(chat_id)
+                    bot.sendMessage(chat_id,
+                                    f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help",
+                                    reply_markup=KB.main_keyboard())
+
+                else:
+                    bot.answerCallbackQuery(query_id, text=f"Your ship {enemy_ship} destroy 💥")
+                    bot.sendMessage(chat_id,
+                                    f'Choose your ship to attack:', reply_markup=KB.ship_list_button(ship_list))
+                    bot.sendMessage(chat_id, '/exit to leave the battlefield', reply_markup=KB.main_keyboard())
 
 
 def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list):
@@ -375,107 +449,6 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
         else:
             bot.sendMessage(chat_id, "Please use number or /exit", reply_markup=KB.case_menu_keyboard())
 
-    elif branch == 2 and leaf == 1:  # Selling ship
-        if command.isdigit():
-            number = int(command)
-            try:
-                s_cost = get_cost(ship_list[number - 1]) // 2
-                s_name = ship_list[number - 1]
-                ship_list.pop(number - 1)
-                money += s_cost
-                save_json(chat_id, money=money, ship_list=ship_list)
-                bot.sendMessage(chat_id,
-                                f"Money: {money}$ | Case(s): {user_case}\nYour ship {str(s_name)} was sold and you got {str(s_cost)}$ !")
-                display_ship_list = ""
-                for zzz in range(len(ship_list)):
-                    time.sleep(0.1)
-                    display_ship_list += f'{str(zzz + 1)}) {str(ship_list[zzz])} {get_d_sym(get_cost(ship_list[zzz]))}\n'
-                bot.sendMessage(chat_id,
-                                f'Choose your ship to sell:\n{display_ship_list}\n/exit selling ship.', reply_markup=KB.main_keyboard())
-            except KeyError:
-                bot.sendMessage(chat_id, "Ship not found.\n\n/exit selling ship.", reply_markup=KB.main_keyboard())
-        else:
-            bot.sendMessage(chat_id, "Please use number or /exit", reply_markup=KB.main_keyboard())
-
-    elif branch == 3 and leaf == 1:  # FIGHT !
-        if command.isdigit():
-            print(f"Enemy fight {enemy_list}")
-            user_input = int(command)
-            player_cost = 0
-            enemy_cost = 0
-            if len(ship_list) >= user_input > 0:
-                player_ship = ship_list[user_input - 1]
-                player_let, player_int = player_ship.split("-")
-                ship_list.pop(user_input - 1)
-                player_cost = get_cost(player_ship)
-
-                enemy_ship = enemy_list[0]
-                enemy_cost = get_cost(enemy_ship)
-            elif user_input == 0:
-                bot.sendMessage(chat_id, "You left the battlefield.")
-                try:
-                    del save_tree_choice[chat_id]
-                except KeyError:
-                    pass
-                enemy_list = []
-                save_json(chat_id, ship_list=ship_list, enemy_list=enemy_list)
-                bot.sendMessage(chat_id,
-                                f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help",
-                                reply_markup=KB.main_keyboard())
-
-            else:
-                bot.sendMessage(chat_id, "You do not have ship with choosed number.", reply_markup=KB.main_keyboard())
-            if player_cost != 0 and enemy_cost != 0:
-                if player_cost > enemy_cost:
-                    bot.sendMessage(chat_id, "You won and got: " + str(enemy_cost // 2) + "$ !")
-                    damage = random.randint(0, 30)
-                    time_player_int = int(player_int)
-                    fin_player_int = time_player_int - damage
-                    player_int = get_int_ship(fin_player_int)
-                    new_ship = str(player_let) + str(player_int)
-                    ship_list.append(new_ship)
-                    bot.sendMessage(chat_id,
-                                    "Your ship has taken " + str(damage) + " damage. Now it is " + str(new_ship) + ".")
-                    money += enemy_cost // 2
-                    enemy_list.pop(0)
-                    save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list)
-                    try:
-                        bot.sendMessage(chat_id,
-                                        f"You will be fighting with: {str(enemy_list[0])} {str(get_d_sym(get_cost(str(enemy_list[0]))))}")
-
-                        display_ship_list = ""
-                        for zzz in range(len(ship_list)):
-                            time.sleep(0.1)
-                            display_ship_list += f'{str(zzz + 1)}) {str(ship_list[zzz])} {get_d_sym(get_cost(ship_list[zzz]))}\n'
-                        bot.sendMessage(chat_id,
-                                        f'Choose your ship to attack:\n{display_ship_list}\n/exit to leave the battlefield',
-                                        reply_markup=KB.main_keyboard())
-                    except IndexError:
-                        bot.sendMessage(chat_id, f"Battle is finished ! Congratulation !")
-                        tree_choice(chat_id)
-                        bot.sendMessage(chat_id,
-                                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help",
-                                        reply_markup=KB.main_keyboard())
-
-                else:
-                    bot.sendMessage(chat_id, "You've lost your ship! Be careful next time!")
-                    save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list)
-                    if len(ship_list) == 0:
-                        bot.sendMessage(chat_id, "Battle is finished. You loose all your ships.")
-                        tree_choice(chat_id)
-                        bot.sendMessage(chat_id,
-                                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help",
-                                        reply_markup=KB.main_keyboard())
-
-                    else:
-                        display_ship_list = ""
-                        for zzz in range(len(ship_list)):
-                            time.sleep(0.1)
-                            display_ship_list += f'{str(zzz + 1)}) {str(ship_list[zzz])} {get_d_sym(get_cost(ship_list[zzz]))}\n'
-                        bot.sendMessage(chat_id,
-                                        f'Choose your ship to attack:\n{display_ship_list}\n/exit to leave the battlefield', reply_markup=KB.main_keyboard())
-        else:
-            bot.sendMessage(chat_id, "Please use number.")
     elif branch == 4 and leaf == 1:
         username = command
         save_json(chat_id, username=username)
@@ -488,7 +461,8 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
 
 # Initializing bot
 bot = telepot.Bot(secrets['token'])
-MessageLoop(bot, {'chat': handle}).run_as_thread()
+MessageLoop(bot, {'chat': handle,
+                  'callback_query': on_callback_query}).run_as_thread()
 print('StarWalkers online')
 bot.sendMessage(chat_id_owner, 'StarWalkers online')
 

@@ -1,4 +1,5 @@
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from func import roll, got_let_int, get_int_ship, get_d_sym, get_cost
 
 main_buttons = [
             [KeyboardButton(text='🏪 Case Menu'), KeyboardButton(text='💸 Buy case'), KeyboardButton(text='🎁 Open case')],
@@ -18,3 +19,18 @@ def case_menu_keyboard():
     buttons = case_menu_buttons + main_buttons
     custom_keyboard = ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
     return custom_keyboard
+
+
+def ship_list_button(ship_list):
+    buttons = []
+    row = []
+    for ship in ship_list:
+        button = InlineKeyboardButton(text=f"{ship} {get_d_sym(get_cost(ship))}", callback_data=ship)
+        row.append(button)
+        if len(row) == 2:
+            buttons.append(row)
+            row = []
+    if row:
+        buttons.append(row)
+    ship_list_keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return ship_list_keyboard
