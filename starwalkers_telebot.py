@@ -253,7 +253,9 @@ def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
 
     elif branch == 2:  # Collection and selling
         bot.sendMessage(chat_id,
-                        f"Choose your ship to sell:", reply_markup=KB.ship_list_button(ship_list))
+                        f"Choose your ship to sell:", reply_markup=KB.sell_ship_keyboard(ship_list))
+        bot.sendMessage(chat_id,
+                        f'/exit selling ship.', reply_markup=KB.main_keyboard())
         tree_choice(chat_id, branch, 1)
 
     elif branch == 3:  # Fight
@@ -301,17 +303,44 @@ def on_callback_query(msg):
         bot.sendMessage(chat_id, f"{query_data} is a nice ship")
 
     elif branch == 2 and leaf == 1:
-        s_cost = get_cost(query_data) // 2
-        ship_list.remove(query_data)
-        money += s_cost
-        save_json(chat_id, money=money, ship_list=ship_list)
-        bot.answerCallbackQuery(query_id, text=f"Ship {query_data} sold 💲💲💲")
-        bot.sendMessage(chat_id,
-                        f"Money: {money}$ | Case(s): {user_case}\nYour ship {query_data} was sold and you got {s_cost}$ !")
-        bot.sendMessage(chat_id,
-                        f"Choose your ship to sell:", reply_markup=KB.ship_list_button(ship_list))
-        bot.sendMessage(chat_id,
-                        f'/exit selling ship.', reply_markup=KB.main_keyboard())
+        if query_data in ship_list:
+            s_cost = get_cost(query_data) // 2
+            ship_list.remove(query_data)
+            money += s_cost
+            save_json(chat_id, money=money, ship_list=ship_list)
+            bot.answerCallbackQuery(query_id, text=f"Ship {query_data} sold 💲💲💲")
+            bot.sendMessage(chat_id,
+                            f"Money: {money}$ | Case(s): {user_case}\nYour ship {query_data} was sold and you got {s_cost}$ !")
+            bot.sendMessage(chat_id,
+                            f"Choose your ship to sell:", reply_markup=KB.sell_ship_keyboard(ship_list))
+            bot.sendMessage(chat_id,
+                            f'/exit selling ship.', reply_markup=KB.main_keyboard())
+        else:
+            ship_sell = []
+            money_earned = 0
+            for ship in ship_list:
+                if get_d_sym(get_cost(ship)) == query_data:
+                    s_cost = get_cost(ship) // 2
+                    ship_sell.append(ship)
+                    money += s_cost
+                    money_earned += s_cost
+                    save_json(chat_id, money=money)
+                    bot.sendMessage(chat_id,
+                                    f"Money: {money}$ | Case(s): {user_case}\nYour ship {ship} was sold and you got {s_cost}$ !")
+            if len(ship_sell) > 0:
+                for ship in ship_sell:
+                    ship_list.remove(ship)
+                save_json(chat_id, ship_list=ship_list)
+                bot.sendMessage(chat_id,
+                                f"Money: {money}$ | Case(s): {user_case}\n{money_earned}$ earned by selling {len(ship_sell)} ship(s) !")
+                bot.answerCallbackQuery(query_id, text=f"{money_earned}$ earned 💲💲💲")
+            else:
+                bot.sendMessage(chat_id, "No ship(s) to sell")
+                bot.answerCallbackQuery(query_id, "No ship(s) to sell")
+            bot.sendMessage(chat_id,
+                            f"Choose your ship to sell:", reply_markup=KB.sell_ship_keyboard(ship_list))
+            bot.sendMessage(chat_id,
+                            f'/exit selling ship.', reply_markup=KB.main_keyboard())
 
     elif branch == 3 and leaf == 1:
         player_cost = 0

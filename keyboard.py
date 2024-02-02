@@ -32,5 +32,34 @@ def ship_list_button(ship_list):
             row = []
     if row:
         buttons.append(row)
+
     ship_list_keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return ship_list_keyboard
+
+
+def sell_ship_keyboard(ship_list):
+    buttons = []
+    row = []
+    for ship in ship_list:
+        button = InlineKeyboardButton(text=f"{ship} {get_d_sym(get_cost(ship))}", callback_data=ship)
+        row.append(button)
+        if len(row) == 2:
+            buttons.append(row)
+            row = []
+    if row:
+        buttons.append(row)
+
+    buttons.append([
+        InlineKeyboardButton(text='$', callback_data='$'),
+        InlineKeyboardButton(text='$|$', callback_data='$|$')
+    ])
+    buttons.append([
+        InlineKeyboardButton(text='$|$|$', callback_data='$|$|$'),
+        InlineKeyboardButton(text='$|$|$|$', callback_data='$|$|$|$')
+    ])
+    buttons.append([
+        InlineKeyboardButton(text='$|$|$|$|$', callback_data='$|$|$|$|$')
+    ])
+
+    custom_keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return custom_keyboard
