@@ -234,10 +234,10 @@ def handle(msg):
         tree_choice(chat_id)
         bot.sendMessage(chat_id,
                         f'WELCOME TO STARWALKERS!\nVersion: {settings["version"]}\n\n'
-                        "Starwalkers is a seemingly simple game where mistakes can cost you dearly. Start your adventure with $30 and buy your first ships. It's time to fight! Can you be the winner?\n\n"
+                        f"Starwalkers is a seemingly simple game where mistakes can cost you dearly. Start your adventure with ${settings['starting_money']} and buy your first ships. It's time to fight! Can you be the winner?\n\n"
 
                         "Expand your fleet with /case_menu:\n"
-                        "  • /buy_case allows you to buy $10 cases containing a random ship\n"
+                        f"  • /buy_case allows you to buy ${settings['cost_case']} cases containing a random ship\n"
                         "  • /open_case allows you to open the crates\n\n"
 
                         "Organize your fleet with /collection:\n"
@@ -248,7 +248,7 @@ def handle(msg):
                         "Be careful, during combat it is the rank that counts and not the visual way of representing it.\n\n"
 
                         "Go to war with /fight:\n"
-                        "You will fight randomly from 1 to 3 enemy boats. You can't choose your opponent so choose your boat wisely to fight.\n"
+                        f"You will fight randomly from {settings['min_enemy']} to {settings['max_enemy']} enemy boats. You can't choose your opponent so choose your boat wisely to fight.\n"
                         "Intuitively, the higher your ship's rank, the more likely it is to win. For example if your ship is A-9999 and it is fighting against Z-0000. You will win because your rank is higher than that of your opponent.\n"
                         "Be careful, during combat it is the rank that counts and not the visual way of representing it.\n"
                         "Ships take damage during combat and lose ranks\n\n"
@@ -269,7 +269,7 @@ def handle(msg):
             branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list)
 
         elif branch != 0 and leaf != 0:
-            leaf_output(chat_id, username, command, branch, leaf, money, user_case, ship_list, enemy_list)
+            leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, username if 'username' in ID_info else None)
 
 
 def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
@@ -480,7 +480,7 @@ def on_callback_query(msg):
             bot.answerCallbackQuery(query_id, text=f"Failed login to account of Captain {username}")
 
 
-def leaf_output(chat_id, username, command, branch, leaf, money, user_case, ship_list, enemy_list):
+def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, username=None):
     settings = settings_file()
     if branch == 1 and leaf == 1:  # Buy case
         if command.isdigit() or command in ['Half', 'Max']:
