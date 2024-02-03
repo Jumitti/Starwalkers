@@ -572,6 +572,7 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
         contact_captain = save_tree_choice[chat_id]['contact_captain']
         captain_info = load_json(contact_captain)
         money_receiver = captain_info['money']
+        captain_username = captain_info['username']
         if command.isdigit() or command in ['Half', 'Max']:
             if command.isdigit() and money >= int(command):
                 gift = int(command)
@@ -591,7 +592,7 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
                 money_receiver += gift
                 save_json(contact_captain, money=money_receiver)
 
-                bot.sendMessage(chat_id, f"{gift}$ sent to Captain {username}", reply_markup=KB.main_keyboard())
+                bot.sendMessage(chat_id, f"{gift}$ sent to Captain {captain_username}", reply_markup=KB.main_keyboard())
                 money -= gift
                 save_json(chat_id, money=money)
         else:
