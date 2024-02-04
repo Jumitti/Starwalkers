@@ -120,3 +120,11 @@ def captains_button(captains):
 def language_keyboard():
     custom_keyboard = InlineKeyboardMarkup(inline_keyboard=language_buttons)
     return custom_keyboard
+
+
+def upgrade_keyboard():
+    upgrade_buttons = [
+        [InlineKeyboardButton(text=f"Yes 🚀", callback_data='upgrade_fleet')]
+    ]
+    custom_keyboard = InlineKeyboardMarkup(inline_keyboard=upgrade_buttons)
+    return custom_keyboard

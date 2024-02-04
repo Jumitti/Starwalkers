@@ -36,7 +36,7 @@ def settings_file():
 
 
 def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None, enemy_list=None, win=None,
-              loose=None, language=None):
+              loose=None, language=None, fleet_size=None):
     try:
         with open(f"user/{chat_id}.json", "r") as read_file:
             ID_info = json.load(read_file)
@@ -64,6 +64,8 @@ def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None
         ID_info['ratio_WL'] = ID_info['win']
     if language is not None:
         ID_info["language"] = language
+    if fleet_size is not None:
+        ID_info["fleet_size"] = fleet_size
 
     with open(f"user/{chat_id}.json", "w") as save_file:
         json.dump(ID_info, save_file, indent=2)
@@ -117,6 +119,21 @@ def list_users():
     return id_players
 
 
+def upgrade_fleet(fleet_size):
+    x1 = 10
+    y1 = 0.5
+    x2 = 40
+    y2 = 1
+    slope = (y2 - y1) / (x2 - x1)
+    if fleet_size < 50:
+        y_fleet_size = y1 + (fleet_size - x1) * slope
+        price = math.floor(100 * math.exp(5 * y_fleet_size))
+    elif fleet_size == 50:
+        y_fleet_size = y1 + (100 - x1) * slope
+        price = math.floor(100 * math.exp(5 * y_fleet_size))
+    return price
+
+
 def tree_choice(chat_id, branch=None, leaf=None, contact_captain=None):
     try:
         del save_tree_choice[chat_id]
@@ -168,6 +185,7 @@ def handle(msg):
         win = ID_info['win']
         loose = ID_info['loose']
         ratio_WL = ID_info['ratio_WL']
+        fleet_size = ID_info['fleet_size']
         username = ID_info['username']
         language = ID_info['language']
         if language == 'ENG':
@@ -188,6 +206,9 @@ def handle(msg):
             save_json(chat_id, loose=loose)
             ID_info = load_json(chat_id)
             ratio_WL = ID_info['ratio_WL']
+        if 'fleet_size' not in ID_info:
+            fleet_size = ID_info.get('fleet_size', settings['ship_fleet'])
+            save_json(chat_id, fleet_size=fleet_size)
         if 'language' not in ID_info and 'username' in ID_info:
             bot.sendMessage(chat_id, 'Choose your language:', reply_markup=KB.language_keyboard())
 
@@ -226,7 +247,10 @@ def handle(msg):
         user_case = 0
         ship_list = []
         enemy_list = []
-        save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[])
+        fleet_size = settings['ship_fleet']
+        win = 0
+        loose = 0
+        save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[], fleet_size=fleet_size, win=win, loose=loose)
         bot.sendMessage(chat_id,
                         f"Party restarted, you have {settings['starting_money']}$, 0 case, no ship and no enemy",
                         reply_markup=KB.main_keyboard())
@@ -252,6 +276,8 @@ def handle(msg):
                         reply_markup=KB.ship_list_button(ship_list))
         bot.sendMessage(chat_id, f"\nEarn ships by /buy_case and /open_case"
                                  f"\nEarn money by /sell_ship and /fight", reply_markup=KB.main_keyboard())
+        price = upgrade_fleet(fleet_size)
+        bot.sendMessage(chat_id, f"Increase the fleet by 5 places for {price}$", reply_markup=KB.upgrade_keyboard())
 
     elif command in ['/sell_ship', '🫱🏽‍🫲🏽 Sell ship']:
         branch, leaf = tree_choice(chat_id, 2, 0)
@@ -419,6 +445,7 @@ def on_callback_query(msg):
     win = ID_info['win']
     loose = ID_info['loose']
     ratio_WL = ID_info['ratio_WL']
+    fleet_size = ID_info['fleet_size']
     if 'language' in ID_info:
         language = ID_info['language']
         if language == 'ENG':
@@ -440,6 +467,19 @@ def on_callback_query(msg):
                         f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
         bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions',
                         reply_markup=KB.main_keyboard())
+
+    elif query_data == "upgrade_fleet":
+        if money >= upgrade_fleet(fleet_size):
+            money -= upgrade_fleet(fleet_size)
+            fleet_size += 5
+            save_json(chat_id, money=money, fleet_size=fleet_size)
+            price = upgrade_fleet(fleet_size)
+            bot.sendMessage(chat_id, f'5 places have been purchased. Congratulations Captain {username}\n\n'
+                                     f'Increase the fleet by 5 places for {price}$', reply_markup=KB.upgrade_keyboard())
+            bot.answerCallbackQuery(query_id, text=f"5 places have been purchased 🚀")
+        else:
+            bot.sendMessage(chat_id, f"You don't have the money you need")
+            bot.answerCallbackQuery(query_id, text=f"Not purchased 📉")
 
     elif branch == 0 and leaf == 0:
         bot.answerCallbackQuery(query_id, text=f"{query_data} is a nice ship")
