@@ -12,10 +12,10 @@ def settings_file():
         return settings
 
 
-main_buttons = [[KeyboardButton(text='🧑🏽‍🚀 Captains')],
+main_buttons = [
             [KeyboardButton(text='🏪 Case Menu'), KeyboardButton(text='💸 Buy case'), KeyboardButton(text='🎁 Open case')],
-            [KeyboardButton(text='🚀 Collection/Fleet'), KeyboardButton(text='🫱🏽‍🫲🏽 Sell ship'), KeyboardButton(text='💥 Fight !')],
-            [KeyboardButton(text='⏪ Exit'), KeyboardButton(text='🔄️ Restart'), KeyboardButton(text='❔ Help')]
+            [KeyboardButton(text='🚀 My stats'), KeyboardButton(text='🫱🏽‍🫲🏽 Sell ship'), KeyboardButton(text='💥 Fight !')],
+            [KeyboardButton(text='🧑🏽‍🚀 Captains'), KeyboardButton(text='⏪ Exit'), KeyboardButton(text='❔ Help')]
         ]
 
 case_menu_buttons = [[KeyboardButton(text='1'), KeyboardButton(text='Half'), KeyboardButton(text='Max')]]

@@ -1,1 +1,2 @@
-telepot
+telepot~=12.7
+schedule

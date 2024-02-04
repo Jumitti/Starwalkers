@@ -4,6 +4,7 @@ import random
 import re
 import time
 import math
+import schedule
 
 import telepot
 from telepot.loop import MessageLoop
@@ -34,7 +35,8 @@ def settings_file():
         return settings
 
 
-def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None, enemy_list=None):
+def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None, enemy_list=None, win=None,
+              loose=None):
     try:
         with open(f"user/{chat_id}.json", "r") as read_file:
             ID_info = json.load(read_file)
@@ -52,6 +54,14 @@ def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None
         ID_info["ship_list"] = ship_list
     if enemy_list is not None:
         ID_info["enemy_list"] = enemy_list
+    if win is not None:
+        ID_info["win"] = win
+    if loose is not None:
+        ID_info["loose"] = loose
+    if ID_info['win'] > 0 and ID_info['loose'] > 0:
+        ID_info['ratio_WL'] = ID_info['win'] / ID_info['loose']
+    elif ID_info['win'] == 0 or ID_info['loose'] == 0:
+        ID_info['ratio_WL'] = ID_info['win']
 
     with open(f"user/{chat_id}.json", "w") as save_file:
         json.dump(ID_info, save_file, indent=2)
@@ -79,6 +89,18 @@ def load_db_id_username():
     with open("user/db_id_username.json", "r") as file:
         data = json.load(file)
     return data
+
+
+def daily_reward():  # Daily reward
+    data = load_db_id_username()
+    for user_id, username in data.items():
+        daily_reward = random.randint(30, 50)
+        ID_info = load_json(user_id)
+        money = ID_info['money']
+        money += daily_reward
+        message = f"Good morning Captain {username}. Here is your daily salary {daily_reward}$. May the space conquest be with you !"
+        bot.sendMessage(user_id, message)
+        save_json(user_id, money=money)
 
 
 def list_users():
@@ -134,7 +156,7 @@ def handle(msg):
         bot.sendMessage(chat_id, f'Version: {settings["version"]}')
         time.sleep(0.8)
         bot.sendMessage(chat_id, 'Create save...')
-        save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[])
+        save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[], win=0, loose=0)
         ID_info = load_json(chat_id)
         money = ID_info['money']
         user_case = ID_info['user_case']
@@ -148,9 +170,24 @@ def handle(msg):
     user_case = ID_info['user_case']
     ship_list = ID_info['ship_list']
     enemy_list = ID_info['enemy_list']
+    if 'win' in ID_info:
+        win = ID_info['win']
+    else:
+        win = 0
+        save_json(chat_id, win=win)
+    if 'loose' in ID_info:
+        loose = ID_info['loose']
+    else:
+        loose = 0
+        save_json(chat_id, loose=loose)
+    if 'ratio_WL' in ID_info:
+        ratio_WL = ID_info['ratio_WL']
+    else:
+        ID_info = load_json(chat_id)
+        ratio_WL = ID_info['ratio_WL']
 
     if branch == 4 and leaf == 0:
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
 
     elif command == '/all_user':
         if chat_id == chat_id_owner:
@@ -173,7 +210,7 @@ def handle(msg):
                             "/restart - Ne beef ? Restart the game\n"
                             "/help - A little reminder", reply_markup=KB.main_keyboard())
 
-    elif command in ['/restart', '🔄️ Restart']:
+    elif command == '/restart':
         tree_choice(chat_id)
         money = settings['starting_money']
         user_case = 0
@@ -181,37 +218,45 @@ def handle(msg):
         enemy_list = []
         save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[])
         bot.sendMessage(chat_id,
-                        f"Party restarted, you have {settings['starting_money']}$, 0 case, no ship and no enemy", reply_markup=KB.main_keyboard())
+                        f"Party restarted, you have {settings['starting_money']}$, 0 case, no ship and no enemy",
+                        reply_markup=KB.main_keyboard())
 
     elif command in ['/case_menu', '🏪 Case Menu']:
-        bot.sendMessage(chat_id, "What do you want to do with cases?\n1. /buy_case\n2. /open_case\n", reply_markup=KB.main_keyboard())
+        bot.sendMessage(chat_id, "What do you want to do with cases?\n1. /buy_case\n2. /open_case\n",
+                        reply_markup=KB.main_keyboard())
         tree_choice(chat_id, 1, 0)
 
     elif command in case_menu_list:
         branch, leaf = tree_choice(chat_id, 1, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
 
-    elif command in ['/collection', '🚀 Collection/Fleet']:
+    elif command in ['/collection', '🚀 My stats']:
         tree_choice(chat_id)
-        bot.sendMessage(chat_id, f"Welcome to your fleet Captain {username} !\n\n Your collection of ships:",
+        bot.sendMessage(chat_id, f"Welcome to your fleet Captain {username} !\n\n"
+                        f"Money: {money} | Case(s): {user_case}\n\n"
+                        f"Battle:\n"
+                        f"  - Win: {win}\n"
+                        f"  - Loose: {loose}\n"
+                        f"  - Ratio W/L: {ratio_WL}\n\n"
+                        f"Your collection of ships:",
                         reply_markup=KB.ship_list_button(ship_list))
         bot.sendMessage(chat_id, f"\nEarn ships by /buy_case and /open_case"
                                  f"\nEarn money by /sell_ship and /fight", reply_markup=KB.main_keyboard())
 
     elif command in ['/sell_ship', '🫱🏽‍🫲🏽 Sell ship']:
         branch, leaf = tree_choice(chat_id, 2, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
 
     elif command in ['/fight', '💥 Fight !']:
         branch, leaf = tree_choice(chat_id, 3, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
 
     elif command in ['/exit', '⏪ Exit']:
         tree_choice(chat_id)
         bot.sendMessage(chat_id,
                         f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help",
                         reply_markup=KB.main_keyboard())
-    
+
     elif command in ['/captains_list', '🧑🏽‍🚀 Captains']:
         tree_choice(chat_id, branch=5)
         bot.sendMessage(chat_id,
@@ -220,7 +265,7 @@ def handle(msg):
 
     elif command in captain_menu_list:
         branch, leaf = tree_choice(chat_id, 5, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
 
     elif command == '/godmode':
         tree_choice(chat_id)
@@ -228,7 +273,8 @@ def handle(msg):
         user_case = 1000000
         ship_list = []
         save_json(chat_id, money=1000000, user_case=1000000, ship_list=[], enemy_list=[])
-        bot.sendMessage(chat_id, "God mode activated, you have 1000000$, 1000000 cases but no ship", reply_markup=KB.main_keyboard())
+        bot.sendMessage(chat_id, "God mode activated, you have 1000000$, 1000000 cases but no ship",
+                        reply_markup=KB.main_keyboard())
 
     elif command in ['/help', '❔ Help']:
         tree_choice(chat_id)
@@ -256,7 +302,7 @@ def handle(msg):
                         "Some tips:\n"
                         "   • Don't worry about saving, it's automatic and individual. No one can mess with your game.\n"
                         "   • You can exit any actions at any time with /exit\n"
-                        "   • No more money, no more cash, no more ship, in short, is it over? No, you can use /restart\n"
+                        "   • No more money, no more cash, no more ship, in short, is it over? No, you can use /restart or wait your daily reward\n"
                         "   • Lost ? use /help to see all our commands and tips\n\n"
 
                         "Credit:\n"
@@ -266,13 +312,14 @@ def handle(msg):
 
     else:
         if branch != 0 and leaf == 0:
-            branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list)
+            branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
 
         elif branch != 0 and leaf != 0:
-            leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, username if 'username' in ID_info else None)
+            leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list,
+                        username if 'username' in ID_info else None)
 
 
-def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
+def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose):
     settings = settings_file()
     if branch == 1:  # Case menu
         if command.isdigit() or command in case_menu_list:
@@ -318,7 +365,8 @@ def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
             tree_choice(chat_id, branch, 1)
         else:
             bot.sendMessage(chat_id,
-                            f"You don't have ships.\n/buy_case and /open_case to get ships", reply_markup=KB.main_keyboard())
+                            f"You don't have ships.\n/buy_case and /open_case to get ships",
+                            reply_markup=KB.main_keyboard())
 
     elif branch == 4:
         bot.sendMessage(chat_id,
@@ -331,7 +379,8 @@ def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list):
             bot.sendMessage(chat_id, "Which captain do you want to see?", reply_markup=KB.captains_button(captains))
             tree_choice(chat_id, branch, 1)
         elif command in ['/send_money', '💸 Send']:
-            bot.sendMessage(chat_id, "Which captain do you want to send money to?", reply_markup=KB.captains_button(captains))
+            bot.sendMessage(chat_id, "Which captain do you want to send money to?",
+                            reply_markup=KB.captains_button(captains))
             tree_choice(chat_id, branch, 2)
 
 
@@ -347,6 +396,9 @@ def on_callback_query(msg):
     ship_list = ID_info['ship_list']
     enemy_list = ID_info['enemy_list']
     username = ID_info['username']
+    win = ID_info['win']
+    loose = ID_info['loose']
+    ratio_WL = ID_info['ratio_WL']
 
     if branch == 0 and leaf == 0:
         bot.answerCallbackQuery(query_id, text=f"{query_data} is a nice ship")
@@ -415,7 +467,8 @@ def on_callback_query(msg):
                                 f"Your ship has taken {damage} damage. Now it is {new_ship}.")
                 money += enemy_cost // 2
                 enemy_list.remove(enemy_ship)
-                save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list)
+                win += 1
+                save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list, win=win)
                 if len(enemy_list) > 0:
                     bot.answerCallbackQuery(query_id, text=f"Enemy ship {enemy_ship} destroy 🏅")
                     bot.sendMessage(chat_id,
@@ -434,7 +487,8 @@ def on_callback_query(msg):
             else:
                 ship_list.remove(player_ship)
                 bot.sendMessage(chat_id, "You've lost your ship! Be careful next time!")
-                save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list)
+                loose += 1
+                save_json(chat_id, money=money, ship_list=ship_list, enemy_list=enemy_list, loose=loose)
                 if len(ship_list) == 0:
                     bot.sendMessage(chat_id, "Battle is finished. You loose all your ships.")
                     bot.answerCallbackQuery(query_id, text=f"Battle failed 💥")
@@ -449,7 +503,7 @@ def on_callback_query(msg):
                                     f'Choose your ship to attack:', reply_markup=KB.ship_list_button(ship_list))
                     bot.sendMessage(chat_id, '/exit to leave the battlefield', reply_markup=KB.main_keyboard())
 
-    elif branch == 5 and leaf == 1:
+    elif branch == 5 and leaf == 1:  # See stats from other player
         captain_info = load_json(query_data)
         money = captain_info['money']
         username = captain_info['username']
@@ -458,8 +512,28 @@ def on_callback_query(msg):
         ship_list_str = '\n'.join(ship_list)
         enemy_list = captain_info['enemy_list']
         enemy_list_str = '\n'.join(enemy_list)
+        if 'win' in captain_info:
+            win = captain_info['win']
+        else:
+            win = 0
+            save_json(query_data, win=win)
+        if 'loose' in captain_info:
+            loose = captain_info['loose']
+        else:
+            loose = 0
+            save_json(query_data, loose=loose)
+        if 'ratio_WL' in captain_info:
+            ratio_WL = captain_info['ratio_WL']
+        else:
+            captain_info = load_json(query_data)
+            ratio_WL = captain_info['ratio_WL']
         bot.sendMessage(chat_id,
-                        f"Captain {username}\n\nMoney: {money}\nCase(s): {user_case}\n\n"
+                        f"Captain {username}\n\n"
+                        f"Money: {money} | Case(s): {user_case}\n\n"
+                        f"Battle:\n"
+                        f"  - Win: {win}\n"
+                        f"  - Loose: {loose}\n"
+                        f"  - Ratio W/L: {ratio_WL}\n\n"
                         f"Ship list:\n{ship_list_str}\n\n"
                         f"Enemy list:\n{enemy_list_str}", reply_markup=KB.captains_keyboard())
         bot.answerCallbackQuery(query_id, text=f"Access to ID card of Captain {username}")
@@ -473,7 +547,8 @@ def on_callback_query(msg):
             bot.sendMessage(chat_id,
                             f"How much do you want to send to Captain {username}?\n\nCaptain {username} has {money_captain}$"
                             f"\n\nYou have {money}$\n\n"
-                            f"You can choose {settings['cost_case']}, Half, Max or send as you want by typing", reply_markup=KB.send_money_keyboard())
+                            f"You can choose {settings['cost_case']}, Half, Max or send as you want by typing",
+                            reply_markup=KB.send_money_keyboard())
             bot.answerCallbackQuery(query_id, text=f"Login to account of Captain {username}")
         else:
             bot.sendMessage(chat_id, "You can't send money yourself", reply_markup=KB.send_money_keyboard())
@@ -490,9 +565,9 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
                 if money == settings['cost_case']:
                     number = 1
                 else:
-                    number = math.floor((money/settings['cost_case'])/2)
+                    number = math.floor((money / settings['cost_case']) / 2)
             elif command == 'Max' and money >= settings['cost_case']:
-                number = math.floor((money/settings['cost_case']))
+                number = math.floor((money / settings['cost_case']))
             else:
                 number = 0
                 bot.sendMessage(chat_id, "Not enough money, bro. Try to /sell_ship or /fight\n\n/exit buying case.",
@@ -554,7 +629,8 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
                                 reply_markup=KB.case_menu_keyboard())
             elif user_case <= 0:
                 bot.sendMessage(chat_id,
-                                "You don't have case. /buy_case\n\n/exit opening case.", reply_markup=KB.case_menu_keyboard())
+                                "You don't have case. /buy_case\n\n/exit opening case.",
+                                reply_markup=KB.case_menu_keyboard())
         else:
             bot.sendMessage(chat_id, "Please use number or /exit", reply_markup=KB.case_menu_keyboard())
 
@@ -566,7 +642,8 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
         bot.sendMessage(chat_id,
                         f"Welcome on board Captain {username}\n\n"
                         f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
-        bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions', reply_markup=KB.main_keyboard())
+        bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions',
+                        reply_markup=KB.main_keyboard())
 
     elif branch == 5 and leaf == 2:
         contact_captain = save_tree_choice[chat_id]['contact_captain']
@@ -605,6 +682,8 @@ MessageLoop(bot, {'chat': handle,
                   'callback_query': on_callback_query}).run_as_thread()
 print('StarWalkers online')
 bot.sendMessage(chat_id_owner, 'StarWalkers online')
+schedule.every().day.at("18:06").do(daily_reward)  # Daily reward
 
 while True:
+    schedule.run_pending()  # Daily reward
     pass
