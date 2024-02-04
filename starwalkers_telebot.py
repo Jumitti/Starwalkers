@@ -320,9 +320,6 @@ def handle(msg):
                         "Game by Gametoy20: https://github.com/Gametoy20\n"
                         'Telegram bot by Jumitti: https://github.com/Jumitti', reply_markup=KB.main_keyboard())
 
-    elif command == '/test':
-        bot.sendMessage(chat_id, f'{LANG.hello()} test')
-
     else:
         if branch != 0 and leaf == 0:
             branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language if 'language' in ID_info else None)
