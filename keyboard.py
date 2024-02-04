@@ -13,10 +13,16 @@ def settings_file():
 
 
 main_buttons = [
-            [KeyboardButton(text='🏪 Case Menu'), KeyboardButton(text='💸 Buy case'), KeyboardButton(text='🎁 Open case')],
-            [KeyboardButton(text='🚀 My stats'), KeyboardButton(text='🫱🏽‍🫲🏽 Sell ship'), KeyboardButton(text='💥 Fight !')],
-            [KeyboardButton(text='🧑🏽‍🚀 Captains'), KeyboardButton(text='⏪ Exit'), KeyboardButton(text='❔ Help')]
-        ]
+    [KeyboardButton(text='🏪 Case Menu'), KeyboardButton(text='💸 Buy case'), KeyboardButton(text='🎁 Open case')],
+    [KeyboardButton(text='🚀 My stats'), KeyboardButton(text='🫱🏽‍🫲🏽 Sell ship'), KeyboardButton(text='💥 Fight !')],
+    [KeyboardButton(text='🧑🏽‍🚀 Captains'), KeyboardButton(text='⏪ Exit'), KeyboardButton(text='❔ Help')]
+]
+
+language_buttons = [
+    [InlineKeyboardButton(text=f"English", callback_data='ENG')],
+    [InlineKeyboardButton(text=f"Russian", callback_data='RU')],
+    [InlineKeyboardButton(text=f"Francais", callback_data='FR')],
+]
 
 case_menu_buttons = [[KeyboardButton(text='1'), KeyboardButton(text='Half'), KeyboardButton(text='Max')]]
 
@@ -24,7 +30,8 @@ captains_buttons = [[KeyboardButton(text='👀 See'), KeyboardButton(text='💸 
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 settings = settings_file()
-send_money_buttons = [[KeyboardButton(text=f"{settings['cost_case']}"), KeyboardButton(text='Half'), KeyboardButton(text='Max')]]
+send_money_buttons = [
+    [KeyboardButton(text=f"{settings['cost_case']}"), KeyboardButton(text='Half'), KeyboardButton(text='Max')]]
 
 
 def main_keyboard():
@@ -107,4 +114,9 @@ def captains_button(captains):
         buttons.append(row)
 
     custom_keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return custom_keyboard
+
+
+def language_keyboard():
+    custom_keyboard = InlineKeyboardMarkup(inline_keyboard=language_buttons)
     return custom_keyboard

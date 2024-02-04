@@ -36,7 +36,7 @@ def settings_file():
 
 
 def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None, enemy_list=None, win=None,
-              loose=None):
+              loose=None, language=None):
     try:
         with open(f"user/{chat_id}.json", "r") as read_file:
             ID_info = json.load(read_file)
@@ -62,6 +62,8 @@ def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None
         ID_info['ratio_WL'] = ID_info['win'] / ID_info['loose']
     elif ID_info['win'] == 0 or ID_info['loose'] == 0:
         ID_info['ratio_WL'] = ID_info['win']
+    if language is not None:
+        ID_info["language"] = language
 
     with open(f"user/{chat_id}.json", "w") as save_file:
         json.dump(ID_info, save_file, indent=2)
@@ -149,12 +151,11 @@ def handle(msg):
 
     try:
         ID_info = load_json(chat_id)
-
     except FileNotFoundError:
         bot.sendMessage(chat_id, 'WELCOME TO STARWALKERS!')
-        time.sleep(0.8)
+        time.sleep(0.5)
         bot.sendMessage(chat_id, f'Version: {settings["version"]}')
-        time.sleep(0.8)
+        time.sleep(0.5)
         bot.sendMessage(chat_id, 'Create save...')
         save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[], win=0, loose=0)
         ID_info = load_json(chat_id)
@@ -162,29 +163,38 @@ def handle(msg):
         user_case = ID_info['user_case']
         ship_list = ID_info['ship_list']
         enemy_list = ID_info['enemy_list']
-        branch, leaf = tree_choice(chat_id, 4, 0)
 
-    if 'username' in ID_info:
+    try:
+        win = ID_info['win']
+        loose = ID_info['loose']
+        ratio_WL = ID_info['ratio_WL']
+        language = ID_info['language']
         username = ID_info['username']
+        if language == 'ENG':
+            import language.eng as LANG
+        elif language == 'RU':
+            import language.ru as LANG
+        elif language == 'FR':
+            import language.fr as LANG
+    except KeyError:
+        bot.sendMessage(chat_id, f'Update for v{settings["version"]}')
+        if 'username' not in ID_info:
+            branch, leaf = tree_choice(chat_id, 4, 0)
+        if 'win' not in ID_info:
+            win = ID_info.get('win', 0)
+            save_json(chat_id, win=win)
+        if 'loose' not in ID_info:
+            loose = ID_info.get('loose', 0)
+            save_json(chat_id, loose=loose)
+            ID_info = load_json(chat_id)
+            ratio_WL = ID_info['ratio_WL']
+        if 'language' not in ID_info:
+            bot.sendMessage(chat_id, 'Choose your language:', reply_markup=KB.language_keyboard())
+
     money = ID_info['money']
     user_case = ID_info['user_case']
     ship_list = ID_info['ship_list']
     enemy_list = ID_info['enemy_list']
-    if 'win' in ID_info:
-        win = ID_info['win']
-    else:
-        win = 0
-        save_json(chat_id, win=win)
-    if 'loose' in ID_info:
-        loose = ID_info['loose']
-    else:
-        loose = 0
-        save_json(chat_id, loose=loose)
-    if 'ratio_WL' in ID_info:
-        ratio_WL = ID_info['ratio_WL']
-    else:
-        ID_info = load_json(chat_id)
-        ratio_WL = ID_info['ratio_WL']
 
     if branch == 4 and leaf == 0:
         branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
@@ -228,7 +238,7 @@ def handle(msg):
 
     elif command in case_menu_list:
         branch, leaf = tree_choice(chat_id, 1, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language)
 
     elif command in ['/collection', '🚀 My stats']:
         tree_choice(chat_id)
@@ -245,11 +255,11 @@ def handle(msg):
 
     elif command in ['/sell_ship', '🫱🏽‍🫲🏽 Sell ship']:
         branch, leaf = tree_choice(chat_id, 2, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language)
 
     elif command in ['/fight', '💥 Fight !']:
         branch, leaf = tree_choice(chat_id, 3, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language)
 
     elif command in ['/exit', '⏪ Exit']:
         tree_choice(chat_id)
@@ -265,7 +275,7 @@ def handle(msg):
 
     elif command in captain_menu_list:
         branch, leaf = tree_choice(chat_id, 5, 0)
-        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
+        branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language)
 
     elif command == '/godmode':
         tree_choice(chat_id)
@@ -310,16 +320,28 @@ def handle(msg):
                         "Game by Gametoy20: https://github.com/Gametoy20\n"
                         'Telegram bot by Jumitti: https://github.com/Jumitti', reply_markup=KB.main_keyboard())
 
+    elif command == '/test':
+        bot.sendMessage(chat_id, f'{LANG.hello()} test')
+
     else:
         if branch != 0 and leaf == 0:
-            branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose)
+            branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language if 'language' in ID_info else None)
 
         elif branch != 0 and leaf != 0:
-            leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list,
+            leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, language if 'language' in ID_info else None,
                         username if 'username' in ID_info else None)
 
 
-def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose):
+def branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language=None):
+    if language is not None:
+        if language == 'ENG':
+            import language.eng as LANG
+        elif language == 'RU':
+            import language.ru as LANG
+        elif language == 'FR':
+            import language.fr as LANG
+    else:
+        import language.eng as LANG
     settings = settings_file()
     if branch == 1:  # Case menu
         if command.isdigit() or command in case_menu_list:
@@ -399,8 +421,23 @@ def on_callback_query(msg):
     win = ID_info['win']
     loose = ID_info['loose']
     ratio_WL = ID_info['ratio_WL']
+    if 'language' in ID_info:
+        language = ID_info['language']
+        if language == 'ENG':
+            import language.eng as LANG
+        elif language == 'RU':
+            import language.ru as LANG
+        elif language == 'FR':
+            import language.fr as LANG
+    else:
+        import language.eng as LANG
 
-    if branch == 0 and leaf == 0:
+    if query_data in ['ENG', 'RU', 'FR']:
+        save_json(chat_id, language=query_data)
+        bot.answerCallbackQuery(query_id, text=f"Language {query_data} selected")
+        bot.sendMessage(chat_id, f"Language {query_data} selected")
+
+    elif branch == 0 and leaf == 0:
         bot.answerCallbackQuery(query_id, text=f"{query_data} is a nice ship")
         bot.sendMessage(chat_id, f"{query_data} is a nice ship")
 
@@ -512,20 +549,16 @@ def on_callback_query(msg):
         ship_list_str = '\n'.join(ship_list)
         enemy_list = captain_info['enemy_list']
         enemy_list_str = '\n'.join(enemy_list)
-        if 'win' in captain_info:
-            win = captain_info['win']
-        else:
-            win = 0
-            save_json(query_data, win=win)
-        if 'loose' in captain_info:
-            loose = captain_info['loose']
-        else:
-            loose = 0
-            save_json(query_data, loose=loose)
-        if 'ratio_WL' in captain_info:
-            ratio_WL = captain_info['ratio_WL']
-        else:
+        win = captain_info.get('win', 0)
+        loose = captain_info.get('loose', 0)
+        if 'win' or 'loose' not in captain_info:
+            if 'win' not in captain_info:
+                save_json(query_data, win=win)
+            if 'loose' not in captain_info:
+                save_json(query_data, loose=loose)
             captain_info = load_json(query_data)
+            ratio_WL = captain_info['ratio_WL']
+        if 'ratio_WL' in captain_info:
             ratio_WL = captain_info['ratio_WL']
         bot.sendMessage(chat_id,
                         f"Captain {username}\n\n"
@@ -555,7 +588,16 @@ def on_callback_query(msg):
             bot.answerCallbackQuery(query_id, text=f"Failed login to account of Captain {username}")
 
 
-def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, username=None):
+def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, language=None, username=None):
+    if language is not None:
+        if language == 'ENG':
+            import language.eng as LANG
+        elif language == 'RU':
+            import language.ru as LANG
+        elif language == 'FR':
+            import language.fr as LANG
+    else:
+        import language.eng as LANG
     settings = settings_file()
     if branch == 1 and leaf == 1:  # Buy case
         if command.isdigit() or command in ['Half', 'Max']:
@@ -650,6 +692,26 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
         captain_info = load_json(contact_captain)
         money_receiver = captain_info['money']
         captain_username = captain_info['username']
+        if 'win' or 'loose' not in captain_info:
+            if 'win' not in captain_info:
+                save_json(query_data, win=win)
+            if 'loose' not in captain_info:
+                save_json(query_data, loose=loose)
+            captain_info = load_json(query_data)
+            ratio_WL = captain_info['ratio_WL']
+        if 'ratio_WL' in captain_info:
+            ratio_WL = captain_info['ratio_WL']
+        if 'language' in captain_info:
+            captain_language = captain_info['language']
+            if captain_language == 'ENG':
+                import language.eng as LANG_captain
+            elif captain_language == 'RU':
+                import language.ru as LANG_captain
+            elif captain_language == 'FR':
+                import language.fr as LANG_captain
+        else:
+            import language.eng as LANG_captain
+
         if command.isdigit() or command in ['Half', 'Max']:
             if command.isdigit() and money >= int(command):
                 gift = int(command)
