@@ -168,8 +168,8 @@ def handle(msg):
         win = ID_info['win']
         loose = ID_info['loose']
         ratio_WL = ID_info['ratio_WL']
-        language = ID_info['language']
         username = ID_info['username']
+        language = ID_info['language']
         if language == 'ENG':
             import language.eng as LANG
         elif language == 'RU':
@@ -178,7 +178,7 @@ def handle(msg):
             import language.fr as LANG
     except KeyError:
         bot.sendMessage(chat_id, f'Update for v{settings["version"]}')
-        if 'username' not in ID_info:
+        if 'username' not in ID_info and leaf == 0:
             branch, leaf = tree_choice(chat_id, 4, 0)
         if 'win' not in ID_info:
             win = ID_info.get('win', 0)
@@ -188,7 +188,7 @@ def handle(msg):
             save_json(chat_id, loose=loose)
             ID_info = load_json(chat_id)
             ratio_WL = ID_info['ratio_WL']
-        if 'language' not in ID_info:
+        if 'language' not in ID_info and 'username' in ID_info:
             bot.sendMessage(chat_id, 'Choose your language:', reply_markup=KB.language_keyboard())
 
     money = ID_info['money']
@@ -417,7 +417,8 @@ def on_callback_query(msg):
     user_case = ID_info['user_case']
     ship_list = ID_info['ship_list']
     enemy_list = ID_info['enemy_list']
-    username = ID_info['username']
+    if 'username' in ID_info:
+        username = ID_info['username']
     win = ID_info['win']
     loose = ID_info['loose']
     ratio_WL = ID_info['ratio_WL']
@@ -436,6 +437,12 @@ def on_callback_query(msg):
         save_json(chat_id, language=query_data)
         bot.answerCallbackQuery(query_id, text=f"Language {query_data} selected")
         bot.sendMessage(chat_id, f"Language {query_data} selected")
+        bot.sendMessage(chat_id, 'Save created')
+        bot.sendMessage(chat_id,
+                        f"Welcome on board Captain {username}\n\n"
+                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
+        bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions',
+                        reply_markup=KB.main_keyboard())
 
     elif branch == 0 and leaf == 0:
         bot.answerCallbackQuery(query_id, text=f"{query_data} is a nice ship")
@@ -549,13 +556,12 @@ def on_callback_query(msg):
         ship_list_str = '\n'.join(ship_list)
         enemy_list = captain_info['enemy_list']
         enemy_list_str = '\n'.join(enemy_list)
-        win = captain_info.get('win', 0)
-        loose = captain_info.get('loose', 0)
-        if 'win' or 'loose' not in captain_info:
-            if 'win' not in captain_info:
-                save_json(query_data, win=win)
-            if 'loose' not in captain_info:
-                save_json(query_data, loose=loose)
+        if 'win' not in captain_info:
+            win = captain_info.get('win', 0)
+            save_json(query_data, win=win)
+        if 'loose' not in captain_info:
+            loose = captain_info.get('loose', 0)
+            save_json(query_data, loose=loose)
             captain_info = load_json(query_data)
             ratio_WL = captain_info['ratio_WL']
         if 'ratio_WL' in captain_info:
@@ -676,16 +682,11 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
         else:
             bot.sendMessage(chat_id, "Please use number or /exit", reply_markup=KB.case_menu_keyboard())
 
-    elif branch == 4 and leaf == 1:
+    elif branch == 4 and leaf == 1:  # Username
         username = command
         save_json(chat_id, username=username)
         db_id_username(chat_id, username)
-        bot.sendMessage(chat_id, 'Save created')
-        bot.sendMessage(chat_id,
-                        f"Welcome on board Captain {username}\n\n"
-                        f"Money: {money}$ | Case(s): {user_case}\n\nMenu:\n1. /case_menu\n2. /collection\n3. /fight\n4. /help")
-        bot.sendMessage(chat_id, 'Try /help to see rules, how to play and all functions',
-                        reply_markup=KB.main_keyboard())
+        bot.sendMessage(chat_id, 'Choose your language:', reply_markup=KB.language_keyboard())
 
     elif branch == 5 and leaf == 2:
         contact_captain = save_tree_choice[chat_id]['contact_captain']
@@ -694,10 +695,10 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
         captain_username = captain_info['username']
         if 'win' or 'loose' not in captain_info:
             if 'win' not in captain_info:
-                save_json(query_data, win=win)
+                save_json(contact_captain, win=win)
             if 'loose' not in captain_info:
-                save_json(query_data, loose=loose)
-            captain_info = load_json(query_data)
+                save_json(contact_captain, loose=loose)
+            captain_info = load_json(contact_captain)
             ratio_WL = captain_info['ratio_WL']
         if 'ratio_WL' in captain_info:
             ratio_WL = captain_info['ratio_WL']
