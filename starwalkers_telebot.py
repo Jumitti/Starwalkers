@@ -36,7 +36,7 @@ def settings_file():
 
 
 def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None, enemy_list=None, win=None,
-              loose=None, language=None, fleet_size=None):
+              loose=None, language=None, fleet_size=None, godmode=None):
     try:
         with open(f"user/{chat_id}.json", "r") as read_file:
             ID_info = json.load(read_file)
@@ -66,6 +66,8 @@ def save_json(chat_id, username=None, money=None, user_case=None, ship_list=None
         ID_info["language"] = language
     if fleet_size is not None:
         ID_info["fleet_size"] = fleet_size
+    if godmode is not None:
+        ID_info["godmode"] = godmode
 
     with open(f"user/{chat_id}.json", "w") as save_file:
         json.dump(ID_info, save_file, indent=2)
@@ -184,7 +186,6 @@ def handle(msg):
     try:
         win = ID_info['win']
         loose = ID_info['loose']
-        ratio_WL = ID_info['ratio_WL']
         fleet_size = ID_info['fleet_size']
         username = ID_info['username']
         language = ID_info['language']
@@ -194,6 +195,7 @@ def handle(msg):
             import language.ru as LANG
         elif language == 'FR':
             import language.fr as LANG
+        godmode = ID_info['godmode']
     except KeyError:
         bot.sendMessage(chat_id, f'Update for v{settings["version"]}')
         if 'username' not in ID_info and leaf == 0:
@@ -205,13 +207,16 @@ def handle(msg):
             loose = ID_info.get('loose', 0)
             save_json(chat_id, loose=loose)
             ID_info = load_json(chat_id)
-            ratio_WL = ID_info['ratio_WL']
         if 'fleet_size' not in ID_info:
             fleet_size = ID_info.get('fleet_size', settings['ship_fleet'])
             save_json(chat_id, fleet_size=fleet_size)
         if 'language' not in ID_info and 'username' in ID_info:
             bot.sendMessage(chat_id, 'Choose your language:', reply_markup=KB.language_keyboard())
+        if 'godmode' not in ID_info:
+            godmode = ID_info.get('godmode', 'OFF')
+            save_json(chat_id, godmode=godmode)
 
+    ratio_WL = ID_info['ratio_WL']
     money = ID_info['money']
     user_case = ID_info['user_case']
     ship_list = ID_info['ship_list']
@@ -243,14 +248,7 @@ def handle(msg):
 
     elif command == '/restart':
         tree_choice(chat_id)
-        money = settings['starting_money']
-        user_case = 0
-        ship_list = []
-        enemy_list = []
-        fleet_size = settings['ship_fleet']
-        win = 0
-        loose = 0
-        save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[], fleet_size=fleet_size, win=win, loose=loose)
+        save_json(chat_id, money=settings['starting_money'], user_case=0, ship_list=[], enemy_list=[], fleet_size=settings['ship_fleet'], win=0, loose=0, godmode='OFF')
         bot.sendMessage(chat_id,
                         f"Party restarted, you have {settings['starting_money']}$, 0 case, no ship and no enemy",
                         reply_markup=KB.main_keyboard())
@@ -266,7 +264,10 @@ def handle(msg):
 
     elif command in ['/collection', '🚀 My stats']:
         tree_choice(chat_id)
-        bot.sendMessage(chat_id, f"Welcome to your fleet Captain {username} !\n\n"
+        message = f"GODMODE: ON\n\nWelcome to your fleet Captain {username} !\n\n" if ID_info[
+                                                                  'godmode'] == 'ON' else f"Welcome to your fleet Captain {username} !\n\n"
+        bot.sendMessage(chat_id,
+                        f"{message}"
                         f"Money: {money} | Case(s): {user_case}\n\n"
                         f"Battle:\n"
                         f"  - Win: {win}\n"
@@ -305,10 +306,8 @@ def handle(msg):
 
     elif command == '/godmode':
         tree_choice(chat_id)
-        money = 1000000
-        user_case = 1000000
         ship_list = []
-        save_json(chat_id, money=1000000, user_case=1000000, ship_list=[], enemy_list=[])
+        save_json(chat_id, money=1000000, user_case=1000000, ship_list=[], enemy_list=[], win=0, loose=0, fleet_size=settings['ship_fleet'], godmode='ON')
         bot.sendMessage(chat_id, "God mode activated, you have 1000000$, 1000000 cases but no ship",
                         reply_markup=KB.main_keyboard())
 
@@ -351,7 +350,8 @@ def handle(msg):
             branch_to_leaf(chat_id, command, branch, leaf, money, user_case, ship_list, win, loose, language if 'language' in ID_info else None)
 
         elif branch != 0 and leaf != 0:
-            leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, language if 'language' in ID_info else None,
+            leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, godmode,
+                        language if 'language' in ID_info else None,
                         username if 'username' in ID_info else None)
 
 
@@ -593,18 +593,18 @@ def on_callback_query(msg):
         ship_list_str = '\n'.join(ship_list)
         enemy_list = captain_info['enemy_list']
         enemy_list_str = '\n'.join(enemy_list)
-        if 'win' not in captain_info:
-            win = captain_info.get('win', 0)
-            save_json(query_data, win=win)
-        if 'loose' not in captain_info:
-            loose = captain_info.get('loose', 0)
-            save_json(query_data, loose=loose)
+        if 'win' or 'loose' not in captain_info:
+            if 'win' not in captain_info:
+                win = captain_info.get('win', 0)
+                save_json(query_data, win=win)
+            if 'loose' not in captain_info:
+                loose = captain_info.get('loose', 0)
+                save_json(query_data, loose=loose)
             captain_info = load_json(query_data)
-            ratio_WL = captain_info['ratio_WL']
-        if 'ratio_WL' in captain_info:
-            ratio_WL = captain_info['ratio_WL']
+        ratio_WL = captain_info['ratio_WL']
+        message = f"GODMODE: ON\n\nCaptain {username}\n\n" if captain_info['godmode'] == 'ON' else f"Captain {username}\n\n"
         bot.sendMessage(chat_id,
-                        f"Captain {username}\n\n"
+                        f"{message}"
                         f"Money: {money} | Case(s): {user_case}\n\n"
                         f"Battle:\n"
                         f"  - Win: {win}\n"
@@ -631,7 +631,7 @@ def on_callback_query(msg):
             bot.answerCallbackQuery(query_id, text=f"Failed login to account of Captain {username}")
 
 
-def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, language=None, username=None):
+def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, godmode, language=None, username=None):
     if language is not None:
         if language == 'ENG':
             import language.eng as LANG
@@ -728,52 +728,58 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
     elif branch == 5 and leaf == 2:
         contact_captain = save_tree_choice[chat_id]['contact_captain']
         captain_info = load_json(contact_captain)
-        money_receiver = captain_info['money']
         captain_username = captain_info['username']
-        if 'win' or 'loose' not in captain_info:
-            if 'win' not in captain_info:
-                save_json(contact_captain, win=win)
-            if 'loose' not in captain_info:
-                save_json(contact_captain, loose=loose)
-            captain_info = load_json(contact_captain)
-            ratio_WL = captain_info['ratio_WL']
-        if 'ratio_WL' in captain_info:
-            ratio_WL = captain_info['ratio_WL']
-        if 'language' in captain_info:
-            captain_language = captain_info['language']
-            if captain_language == 'ENG':
-                import language.eng as LANG_captain
-            elif captain_language == 'RU':
-                import language.ru as LANG_captain
-            elif captain_language == 'FR':
-                import language.fr as LANG_captain
+        if 'godmode' in captain_info:
+            captain_godmode = captain_info['godmode']
         else:
-            import language.eng as LANG_captain
-
-        if command.isdigit() or command in ['Half', 'Max']:
-            if command.isdigit() and money >= int(command):
-                gift = int(command)
-                if gift == 0:
-                    bot.sendMessage(chat_id, "Why did you want to send 0$ ?",
-                                    reply_markup=KB.send_money_keyboard())
-            elif command == 'Half' and money > 0:
-                gift = money / 2
-            elif command == 'Max' and money > 0:
-                gift = money
+            captain_godmode = 'OFF'
+            save_json(contact_captain, godmode=captain_godmode)
+        if godmode == 'OFF' and captain_godmode == 'OFF':
+            money_receiver = captain_info['money']
+            if 'win' or 'loose' not in captain_info:
+                if 'win' not in captain_info:
+                    save_json(contact_captain, win=win)
+                if 'loose' not in captain_info:
+                    save_json(contact_captain, loose=loose)
+                captain_info = load_json(contact_captain)
+            ratio_WL = captain_info['ratio_WL']
+            if 'language' in captain_info:
+                captain_language = captain_info['language']
+                if captain_language == 'ENG':
+                    import language.eng as LANG_captain
+                elif captain_language == 'RU':
+                    import language.ru as LANG_captain
+                elif captain_language == 'FR':
+                    import language.fr as LANG_captain
             else:
-                gift = 0
-                bot.sendMessage(chat_id, "Not enough money, bro. Try to /sell_ship or /fight\n\n/exit buying case.",
-                                reply_markup=KB.send_money_keyboard())
-            if gift > 0:
-                bot.sendMessage(contact_captain, f"Captain {username} send you {gift}$")
-                money_receiver += gift
-                save_json(contact_captain, money=money_receiver)
+                import language.eng as LANG_captain
 
-                bot.sendMessage(chat_id, f"{gift}$ sent to Captain {captain_username}", reply_markup=KB.main_keyboard())
-                money -= gift
-                save_json(chat_id, money=money)
+            if command.isdigit() or command in ['Half', 'Max']:
+                if command.isdigit() and money >= int(command):
+                    gift = int(command)
+                    if gift == 0:
+                        bot.sendMessage(chat_id, "Why did you want to send 0$ ?",
+                                        reply_markup=KB.send_money_keyboard())
+                elif command == 'Half' and money > 0:
+                    gift = money / 2
+                elif command == 'Max' and money > 0:
+                    gift = money
+                else:
+                    gift = 0
+                    bot.sendMessage(chat_id, "Not enough money, bro. Try to /sell_ship or /fight\n\n/exit buying case.",
+                                    reply_markup=KB.send_money_keyboard())
+                if gift > 0:
+                    bot.sendMessage(contact_captain, f"Captain {username} send you {gift}$")
+                    money_receiver += gift
+                    save_json(contact_captain, money=money_receiver)
+
+                    bot.sendMessage(chat_id, f"{gift}$ sent to Captain {captain_username}", reply_markup=KB.main_keyboard())
+                    money -= gift
+                    save_json(chat_id, money=money)
+            else:
+                bot.sendMessage(chat_id, "Please use number or /exit", reply_markup=KB.send_money_keyboard())
         else:
-            bot.sendMessage(chat_id, "Please use number or /exit", reply_markup=KB.send_money_keyboard())
+            bot.sendMessage(chat_id, f"You or Captain {captain_username} is in godmode. Sending money not allowed")
 
 
 # Initializing bot
