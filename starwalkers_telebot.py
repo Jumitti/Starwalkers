@@ -596,7 +596,7 @@ def on_callback_query(msg):
                 damage = random.randint(0, 30)
                 time_player_int = int(player_int)
                 fin_player_int = time_player_int - damage
-                new_ship = roll(player_let, number=fin_player_int)
+                new_ship = roll(letter=player_let, number=fin_player_int)
                 ship_list.remove(player_ship)
                 ship_list.append(new_ship)
                 bot.sendMessage(chat_id,
