@@ -40,17 +40,15 @@ def roll(minimum=None, maximum=None, letter=None, number=None):
     # fi += 1
     if letter is None:
         letters = ["*", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-                   'T', 'U',
-                   'V', 'W', 'X', 'Y', 'Z']
+                   'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
         probabilities = []
         for x in range(0, len(letters)):
-            probabilities.append(math.exp(0.115 * x))
+            probabilities.append(math.exp(0.15 * x))
 
         total = sum(probabilities)
         probabilities = [p / total for p in probabilities]
-        letter = random.choices(letters, weights=probabilities)[0]
-        ship_let = letter
+        ship_let = random.choices(letters, weights=probabilities)[0]
 
         # ran = random.randint(1, 351)
         # if ran == 1:
@@ -163,7 +161,7 @@ def generate_random_letter():
 
     probabilities = []
     for x in range(0, len(letters)):
-        probabilities.append(math.exp(0.115 * x))
+        probabilities.append(math.exp(0.15 * x))
 
     total = sum(probabilities)
     probabilities = [p / total for p in probabilities]
