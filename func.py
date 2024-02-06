@@ -132,7 +132,7 @@ def roll(minimum=None, maximum=None, letter=None, number=None):
 def get_d_sym(a):
     number_d_sym = a / 50
     total = "$"
-    for i in range(1, int(number_d_sym)):
+    for i in range(0, int(number_d_sym)):
         total += "|$"
 
     # if a <= 20:
@@ -152,6 +152,7 @@ def get_d_sym(a):
 def get_cost(a):
     s_let, s_int = a.split("-")
     cost = (got_let_int(s_let) * int(s_int)) // 1000
+    print(cost)
     return cost
 
 
