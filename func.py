@@ -45,7 +45,7 @@ def roll(minimum=None, maximum=None, letter=None, number=None):
 
         probabilities = []
         for x in range(0, len(letters)):
-            probabilities.append(math.exp(0.14 * x))
+            probabilities.append(math.exp(0.115 * x))
 
         total = sum(probabilities)
         probabilities = [p / total for p in probabilities]
@@ -163,10 +163,13 @@ def generate_random_letter():
 
     probabilities = []
     for x in range(0, len(letters)):
-        probabilities.append(math.exp(0.14 * x))
+        probabilities.append(math.exp(0.115 * x))
 
     total = sum(probabilities)
     probabilities = [p / total for p in probabilities]
+    print(probabilities)
     letter = random.choices(letters, weights=probabilities)[0]
 
     return letter
+
+generate_random_letter()
