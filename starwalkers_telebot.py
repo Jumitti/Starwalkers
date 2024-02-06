@@ -13,7 +13,7 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, Reply
 # import termcolor
 # from termcolor import colored, cprint
 import keyboard as KB
-from func import roll, got_let_int, get_int_ship, get_d_sym, get_cost
+from func import roll, got_let_int, get_d_sym, get_cost
 
 script_directory = os.path.dirname(os.path.abspath(__file__))
 secrets_path = os.path.join(script_directory, 'SECRETS.json')

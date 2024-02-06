@@ -116,18 +116,18 @@ def roll(minimum=None, maximum=None, letter=None, number=None):
 
 
 # Can be deprecated with modification of roll()
-def get_int_ship(self_int):
-    if int(self_int) / 10 >= 1:
-        if int(self_int) / 100 >= 1:
-            if int(self_int) / 1000 >= 1:
-                niki = "-" + str(self_int)
-            elif int(self_int) / 1000 < 1:
-                niki = "-0" + str(self_int)
-        elif int(self_int) / 100 < 1:
-            niki = "-00" + str(self_int)
-    elif int(self_int) / 10 < 1:
-        niki = "-000" + str(self_int)
-    return niki
+# def get_int_ship(self_int):
+#     if int(self_int) / 10 >= 1:
+#         if int(self_int) / 100 >= 1:
+#             if int(self_int) / 1000 >= 1:
+#                 niki = "-" + str(self_int)
+#             elif int(self_int) / 1000 < 1:
+#                 niki = "-0" + str(self_int)
+#         elif int(self_int) / 100 < 1:
+#             niki = "-00" + str(self_int)
+#     elif int(self_int) / 10 < 1:
+#         niki = "-000" + str(self_int)
+#     return niki
 
 
 def get_d_sym(a):
