@@ -399,7 +399,7 @@ def handle(msg):
 
         elif branch != 0 and leaf != 0:
             leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, godmode, money_win,
-                        money_spent, case_purchased, case_open, language if 'language' in ID_info else None,
+                        money_spent, case_purchased, case_open, fleet_size, language if 'language' in ID_info else None,
                         username if 'username' in ID_info else None)
 
 
@@ -712,7 +712,7 @@ def on_callback_query(msg):
 
 
 def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, enemy_list, godmode, money_win,
-                money_spent, case_purchased, case_open, language=None, username=None):
+                money_spent, case_purchased, case_open, fleet_size, language=None, username=None):
     if language is not None:
         if language == 'ENG':
             import language.eng as LANG
@@ -753,7 +753,7 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
 
     elif branch == 1 and leaf == 2:  # Open case
         if command.isdigit() or command in ['Half', 'Max']:
-            if user_case >= 1 and len(ship_list) < settings['ship_fleet']:
+            if user_case >= 1 and len(ship_list) < fleet_size:
                 if command.isdigit():
                     number = int(command)
                 elif command == 'Half':
@@ -764,15 +764,15 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
                 elif command == 'Max':
                     number = user_case
 
-                if number + len(ship_list) > settings['ship_fleet']:
+                if number + len(ship_list) > fleet_size:
                     if number > user_case:
                         number = user_case
                         bot.sendMessage(chat_id,
                                         f"Only {number} case(s) will be opened.", reply_markup=KB.case_menu_keyboard())
                     else:
-                        number = settings['ship_fleet'] - len(ship_list)
+                        number = fleet_size - len(ship_list)
                         bot.sendMessage(chat_id,
-                                        f"Only {settings['ship_fleet']} ships is allowed. {number} case(s) will be opened.",
+                                        f"Only {fleet_size} ships is allowed. {number} case(s) will be opened.",
                                         reply_markup=KB.case_menu_keyboard())
 
                 for i in range(0, number):
@@ -792,7 +792,7 @@ def leaf_output(chat_id, command, branch, leaf, money, user_case, ship_list, ene
                                 f"\n\n Earn money by /sell_ship or /fight"
                                 f"\n\n/exit opening case.", reply_markup=KB.case_menu_keyboard())
 
-            elif len(ship_list) == settings['ship_fleet']:
+            elif len(ship_list) == fleet_size:
                 bot.sendMessage(chat_id,
                                 "You have too many ships. /sell_ship and you can open cases again.\n\n/exit opening case.",
                                 reply_markup=KB.case_menu_keyboard())
