@@ -50,6 +50,7 @@ def roll(minimum=None, maximum=None, letter=None, number=None):
         total = sum(probabilities)
         probabilities = [p / total for p in probabilities]
         letter = random.choices(letters, weights=probabilities)[0]
+        ship_let = letter
 
         # ran = random.randint(1, 351)
         # if ran == 1:
