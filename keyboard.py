@@ -1,7 +1,7 @@
 import os
 import json
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-from func import roll, got_let_int, get_int_ship, get_d_sym, get_cost
+from func import roll, got_let_int, get_d_sym, get_cost
 
 
 def settings_file():
