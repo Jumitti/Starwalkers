@@ -171,5 +171,3 @@ def generate_random_letter():
     letter = random.choices(letters, weights=probabilities)[0]
 
     return letter
-
-generate_random_letter()
