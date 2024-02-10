@@ -3,7 +3,7 @@ import os
 import re
 # import termcolor
 import time
-from func import roll, got_let_int, get_int_ship, get_d_sym, get_cost
+from starwalkers.func import roll, got_let_int, get_int_ship, get_d_sym, get_cost
 
 # from termcolor import colored, cprint
 

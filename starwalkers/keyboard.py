@@ -1,15 +1,7 @@
 import os
 import json
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-from func import roll, got_let_int, get_d_sym, get_cost
-
-
-def settings_file():
-    settings_path = os.path.join(script_directory, 'settings.json')
-    with open(settings_path, 'r') as settings_files:
-        settings = json.load(settings_files)
-
-        return settings
+from starwalkers.func import get_d_sym, get_cost, settings_file
 
 
 main_buttons = [
