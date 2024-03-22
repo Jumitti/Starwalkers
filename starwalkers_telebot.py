@@ -18,8 +18,7 @@ chat_id_owner = secrets['id_owner']
 
 # Initializing bot
 bot = telepot.Bot(secrets['token'])
-MessageLoop(bot, {'chat': handle,
-                  'callback_query': on_callback_query}).run_as_thread()
+MessageLoop(bot, {'chat': handle, 'callback_query': on_callback_query}).run_as_thread()
 print('StarWalkers online')
 bot.sendMessage(chat_id_owner, 'StarWalkers online')
 schedule.every().day.at("05:00").do(daily_reward)  # Daily reward
