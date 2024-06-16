@@ -1,2 +1,5 @@
 telepot~=12.7
 schedule
+streamlit
+bcrypt
+pandas
