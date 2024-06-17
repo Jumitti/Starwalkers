@@ -2,3 +2,5 @@
 telegram_bot (not maintened)/SECRETS.json
 user/*
 !user/
+.idea/*
+!.idea
