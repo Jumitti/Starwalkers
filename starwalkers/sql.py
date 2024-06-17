@@ -1,18 +1,23 @@
+import json
+import os
 import sqlite3
 
 import bcrypt
 import streamlit as st
 from bcrypt import checkpw
 
-import random
-import json
-from starwalkers.func import roll, get_cost
+from starwalkers.func import get_cost
 
 
 # Fonction pour initialiser la base de données
 def init_db():
+    if not os.path.exists('user'):
+        os.makedirs('user')
+
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
+
+    # Crée la table si elle n'existe pas déjà
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (username TEXT PRIMARY KEY,
                  password_hash TEXT,
@@ -28,6 +33,15 @@ def init_db():
                  money_spent INTEGER,
                  case_purchased INTEGER,
                  case_open INTEGER)''')
+
+    # Vérifie si la colonne 'grade' existe, sinon l'ajoute
+    c.execute("PRAGMA table_info(users)")
+    columns = [column[1] for column in c.fetchall()]
+
+    if 'grade' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade = 0 WHERE grade IS NULL')
+
     conn.commit()
     conn.close()
 
@@ -48,9 +62,10 @@ def add_user(username, password):
               "money_win,"
               "money_spent,"
               "case_purchased,"
-              "case_open)"
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              (username, hashed_password, 0, 100, 10, 0, 0, 0.00, 0, 0, 0, 0))
+              "case_open,"
+              "grade)"
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+              (username, hashed_password, 0, 100, 10, 0, 0, 0.00, 0, 0, 0, 0, 0))
     conn.commit()
     conn.close()
 
@@ -68,8 +83,9 @@ def reset_profile(username):
               "money_win=?,"
               "money_spent=?,"
               "case_purchased=?,"
-              "case_open=? "
-              "WHERE username=?", (0, 100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0, username))  # Réinitialiser les paramètres nécessaires
+              "case_open=?,"
+              "grade=? "
+              "WHERE username=?", (0, 100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0, 0, username))  # Réinitialiser les paramètres nécessaires
     conn.commit()
 
     user = get_user(username)
@@ -85,6 +101,7 @@ def reset_profile(username):
     st.session_state.money_spent = user[11]
     st.session_state.case_purchased = user[12]
     st.session_state.case_open = user[13]
+    st.session_state.grade = user[14]
 
     conn.close()
 
@@ -137,7 +154,7 @@ def update_money(username, amount):
 
 # Fonction pour mettre à jour les informations de l'utilisateur (cases)
 def update_user(username, cases, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent,
-                case_purchased, case_open):
+                case_purchased, case_open, grade):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
     c.execute("UPDATE users SET cases=?, "
@@ -151,10 +168,11 @@ def update_user(username, cases, money, ship_list, enemy_list, fleet_size, win, 
               "money_win=?,"
               "money_spent=?,"
               "case_purchased=?,"
-              "case_open=? "
+              "case_open=?,"
+              "grade=? "
               "WHERE username=?",
               (cases, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent,
-               case_purchased, case_open, username))
+               case_purchased, case_open, grade, username))
     conn.commit()
     conn.close()
 

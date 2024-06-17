@@ -1,12 +1,12 @@
-import streamlit as st
-import sqlite3
-import bcrypt
-from starwalkers import sql
-import time
 import json
-from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
-import pandas as pd
 import random
+import time
+
+import pandas as pd
+import streamlit as st
+
+from starwalkers import sql
+from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
 
 # Fonction pour initialiser la base de données
 sql.init_db()
@@ -61,6 +61,7 @@ if st.session_state.page == "login":
                 st.session_state.money_spent = user[11]
                 st.session_state.case_purchased = user[12]
                 st.session_state.case_open = user[13]
+                st.session_state.grade = user[14]
                 game() & st.rerun()
             else:
                 col2.error("Username or password incorrect")
@@ -153,7 +154,8 @@ elif st.session_state.page == "game":
                         st.session_state.money_win,
                         st.session_state.money_spent,
                         st.session_state.case_purchased,
-                        st.session_state.case_open)
+                        st.session_state.case_open,
+                        st.session_state.grade)
         st.session_state.username = None
         st.session_state.cases = None
         st.session_state.money = None
@@ -167,6 +169,7 @@ elif st.session_state.page == "game":
         st.session_state.money_spent = None
         st.session_state.case_purchased = None
         st.session_state.case_open = None
+        st.session_state.grade = None
         login() & st.rerun()
 
     id_card = col1.container(border=True)

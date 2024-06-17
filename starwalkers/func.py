@@ -1,21 +1,9 @@
 import json
 import math
-import os
 import random
 
-import telepot
 
-from starwalkers.user_manager import save_json, load_json, load_db_id_username
-
-
-def settings_file():
-    with open("starwalkers/settings.json", 'r') as settings_files:
-        settings = json.load(settings_files)
-
-        return settings
-
-
-def got_let_int(ggg):  # Letter value
+def got_let_int(letter):  # Letter value
     letters = {
         "*": 100,
         "A": 26,
@@ -43,16 +31,15 @@ def got_let_int(ggg):  # Letter value
         "W": 4,
         "X": 3,
         "Y": 2,
-        "Z": 1
-    }
-    return letters.get(ggg, 0)
+        "Z": 1}
+    return letters.get(letter, 0)
 
 
 def roll(minimum=None, maximum=None, letter=None, number=None):  # Generate, modify ships
     if letter is None:
         letters = ["*", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
                    'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-        with open('starwalkers/probabilities_letter_player.json', 'r') as f:
+        with open('probabilities/probabilities_letter.json', 'r') as f:
             probabilities = json.load(f)
         ship_let = random.choices(letters, weights=probabilities)[0]
     else:
@@ -66,7 +53,7 @@ def roll(minimum=None, maximum=None, letter=None, number=None):  # Generate, mod
         ran = number
     else:
         digits = list(range(10000))
-        with open('starwalkers/probabilities_number_player.json', 'r') as f:
+        with open('probabilities/probabilities_number.json', 'r') as f:
             probabilities_number = json.load(f)
         ran = random.choices(digits, weights=probabilities_number)[0]
 
@@ -84,23 +71,24 @@ def get_d_sym(a):  # Cost to dollar
 
 
 def get_cost(a):  # Get cost of a ship
-    s_let, s_int = a.split("-")
-    cost = (got_let_int(s_let) * int(s_int)) // 1000
+    letter, number = a.split("-")
+    cost = (got_let_int(letter) * int(number)) // 1000
     return cost
 
 
-def daily_reward():  # Daily reward
-    data = load_db_id_username()
-    for user_id, username in data.items():
-        daily_reward = random.randint(30, 50)
-        ID_info = load_json(user_id)
-        money = ID_info['money']
-        money_win = ID_info['money_win']
-        money += daily_reward
-        money_win += daily_reward
-        message = f"Good morning Captain {username}. Here is your daily salary {daily_reward}$. May the space conquest be with you !"
-        bot.sendMessage(user_id, message)
-        save_json(user_id, money=money, money_win=money_win)
+# DEPRECATED -> for Telegram bot
+# def daily_reward():  # Daily reward
+#     data = load_db_id_username()
+#     for user_id, username in data.items():
+#         daily_reward = random.randint(30, 50)
+#         ID_info = load_json(user_id)
+#         money = ID_info['money']
+#         money_win = ID_info['money_win']
+#         money += daily_reward
+#         money_win += daily_reward
+#         message = f"Good morning Captain {username}. Here is your daily salary {daily_reward}$. May the space conquest be with you !"
+#         bot.sendMessage(user_id, message)
+#         save_json(user_id, money=money, money_win=money_win)
 
 
 def upgrade_fleet(fleet_size):
