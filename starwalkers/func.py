@@ -67,6 +67,8 @@ def roll(minimum=None, maximum=None, letter=None, number=None):  # Generate, mod
         minimum = 0 if minimum is None else minimum
         maximum = 9999 if maximum is None else maximum
         ran = random.randint(minimum, maximum) if number is None else number
+    elif number is not None:
+        ran = number
     else:
         digits = list(range(10000))
         with open('starwalkers/probabilities_number_player.json', 'r') as f:

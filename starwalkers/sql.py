@@ -124,12 +124,13 @@ def get_user(username):
 def update_money(username, amount):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
-    c.execute("UPDATE users SET money = money + ? WHERE username=?", (amount, username))
+    c.execute("UPDATE users SET money=money + ?, money_win=money_win + ? WHERE username=?", (amount, amount, username))
     conn.commit()
 
     # Mettre à jour st.session_state.money
     user = get_user(username)
     st.session_state.money = user[3]  # Récupérer le nouveau montant d'argent mis à jour
+    st.session_state.money_win = user[10]
 
     conn.close()
 
@@ -166,31 +167,64 @@ def delete_user(username):
     conn.close()
 
 
-def add_ship(username, new_ship):
+def add_ship(username, new_ship, add_to, fight=False):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    # Récupérer la ship_list actuelle du joueur
-    c.execute("SELECT ship_list FROM users WHERE username=?", (username,))
-    current_ship_list_json = c.fetchone()[0]
+    if add_to == "player":
+        # Récupérer la ship_list actuelle du joueur
+        c.execute("SELECT ship_list FROM users WHERE username=?", (username,))
+        current_ship_list_json = c.fetchone()[0]
 
-    # Charger la liste actuelle depuis JSON ou initialiser une liste vide si elle est nulle
-    current_ship_list = json.loads(current_ship_list_json) if current_ship_list_json else []
+        # Charger la liste actuelle depuis JSON ou initialiser une liste vide si elle est nulle
+        current_ship_list = json.loads(current_ship_list_json) if current_ship_list_json else []
 
-    # Ajouter la nouvelle navette à la liste
-    current_ship_list.append(new_ship)
+        # Ajouter la nouvelle navette à la liste
+        current_ship_list.append(new_ship)
 
-    # Convertir la liste en JSON pour la sauvegarde dans la base de données
-    updated_ship_list_json = json.dumps(current_ship_list)
+        # Convertir la liste en JSON pour la sauvegarde dans la base de données
+        updated_ship_list_json = json.dumps(current_ship_list)
 
-    # Mettre à jour la base de données avec la nouvelle liste de navettes
-    c.execute("UPDATE users SET ship_list=?, cases=cases - ?, case_open=case_open + ? WHERE username=?", (updated_ship_list_json, 1, 1, username))
-    conn.commit()
+        # Mettre à jour la base de données avec la nouvelle liste de navettes
+        if fight is False:
+            c.execute("UPDATE users SET ship_list=?, cases=cases - ?, case_open=case_open + ? WHERE username=?", (updated_ship_list_json, 1, 1, username))
+            conn.commit()
 
-    user = get_user(username)
-    st.session_state.cases = user[2]
-    st.session_state.ship_list = user[4]
-    st.session_state.case_open = user[13]
+            user = get_user(username)
+            st.session_state.cases = user[2]
+            st.session_state.ship_list = user[4]
+            st.session_state.case_open = user[13]
+        else:
+            c.execute("UPDATE users SET ship_list=?, win=win + ?, ratio_WL = CASE WHEN loose > 0.00 THEN (win + ?) / loose ELSE win + ?  END WHERE username=?",
+                      (updated_ship_list_json, 1, 1.00, 1.00, username))
+            conn.commit()
+
+            user = get_user(username)
+            st.session_state.cases = user[2]
+            st.session_state.win = user[7]
+            st.session_state.ratio_WL = user[9]
+
+    elif add_to == "enemies":
+        # Récupérer la ship_list actuelle du joueur
+        c.execute("SELECT enemy_list FROM users WHERE username=?", (username,))
+        current_enemy_list_json = c.fetchone()[0]
+
+        # Charger la liste actuelle depuis JSON ou initialiser une liste vide si elle est nulle
+        current_enemy_list = json.loads(current_enemy_list_json) if current_enemy_list_json else []
+
+        # Ajouter la nouvelle navette à la liste
+        current_enemy_list.append(new_ship)
+
+        # Convertir la liste en JSON pour la sauvegarde dans la base de données
+        updated_enemy_list_json = json.dumps(current_enemy_list)
+
+        # Mettre à jour la base de données avec la nouvelle liste de navettes
+        c.execute("UPDATE users SET enemy_list=? WHERE username=?",
+                  (updated_enemy_list_json, username))
+        conn.commit()
+
+        user = get_user(username)
+        st.session_state.enemy_list = user[5]
 
     conn.close()
 
@@ -222,6 +256,71 @@ def sell_ship(username, ship):
     st.session_state.money = user[3]
     st.session_state.ship_list = user[4]
     st.session_state.money_win = user[10]
+
+    conn.close()
+
+
+def remove_ship(username, ship, remove_from, fight=False):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    if remove_from == "player":
+        # Récupérer la ship_list actuelle du joueur
+        c.execute("SELECT ship_list FROM users WHERE username=?", (username,))
+        current_ship_list_json = c.fetchone()[0]
+
+        # Charger la liste actuelle depuis JSON
+        current_ship_list = json.loads(current_ship_list_json)
+
+        # Supprimer la navette spécifique
+        if ship in current_ship_list:
+            current_ship_list.remove(ship)
+
+        # Convertir la liste mise à jour en JSON pour la sauvegarde dans la base de données
+        updated_ship_list_json = json.dumps(current_ship_list)
+
+        if fight is False:
+            # Mettre à jour la base de données avec la nouvelle liste de navettes
+            c.execute("UPDATE users SET ship_list=? WHERE username=?",
+                      (updated_ship_list_json, username))
+            conn.commit()
+
+            user = get_user(username)
+            st.session_state.ship_list = user[4]
+
+        elif fight is True:
+            # Mettre à jour la base de données avec la nouvelle liste de navettes
+            c.execute("UPDATE users SET ship_list=?, loose=loose + ?, ratio_WL = CASE WHEN win > 0.00 THEN win / (loose + ?) ELSE 0.00 / (loose + ?) END WHERE username=?",
+                      (updated_ship_list_json, 1, 1.00, 1.00, username))
+            conn.commit()
+
+            user = get_user(username)
+            st.session_state.ship_list = user[4]
+            st.session_state.loose = user[8]
+            st.session_state.ratio_WL = user[9]
+
+    elif remove_from == "enemies":
+        # Récupérer la ship_list actuelle du joueur
+        c.execute("SELECT enemy_list FROM users WHERE username=?", (username,))
+        current_enemy_list_json = c.fetchone()[0]
+
+        # Charger la liste actuelle depuis JSON
+        current_enemy_list = json.loads(current_enemy_list_json)
+
+        # Supprimer la navette spécifique
+        if ship in current_enemy_list:
+            current_enemy_list.remove(ship)
+
+        # Convertir la liste mise à jour en JSON pour la sauvegarde dans la base de données
+        updated_enemy_list_json = json.dumps(current_enemy_list)
+
+        # Mettre à jour la base de données avec la nouvelle liste de navettes
+        c.execute("UPDATE users SET enemy_list=? WHERE username=?",
+                  (updated_enemy_list_json, username))
+        conn.commit()
+
+        user = get_user(username)
+        st.session_state.enemy_list = user[5]
 
     conn.close()
 
