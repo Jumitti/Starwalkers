@@ -8,11 +8,6 @@ import telepot
 from starwalkers.user_manager import save_json, load_json, load_db_id_username
 
 
-with open("SECRETS.json", 'r') as secrets_file:
-    secrets = json.load(secrets_file)
-bot = telepot.Bot(secrets["token"])
-
-
 def settings_file():
     with open("starwalkers/settings.json", 'r') as settings_files:
         settings = json.load(settings_files)
