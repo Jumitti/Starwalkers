@@ -1,0 +1,8 @@
+{
+  "version": "2.11",
+  "starting_money": 100,
+  "cost_case": 10,
+  "ship_fleet": 10,
+  "min_enemy": 1,
+  "max_enemy": 3
+}
