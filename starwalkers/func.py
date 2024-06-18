@@ -57,7 +57,7 @@ def roll(minimum=None, maximum=None, letter=None, number=None):  # Generate, mod
             probabilities_number = json.load(f)
         ran = random.choices(digits, weights=probabilities_number)[0]
 
-    niki = ship_let + "-" + str(ran)
+    niki = ship_let + "-" + str(ran).zfill(4)
     return niki
 
 
@@ -76,31 +76,12 @@ def get_cost(a):  # Get cost of a ship
     return cost
 
 
-# DEPRECATED -> for Telegram bot
-# def daily_reward():  # Daily reward
-#     data = load_db_id_username()
-#     for user_id, username in data.items():
-#         daily_reward = random.randint(30, 50)
-#         ID_info = load_json(user_id)
-#         money = ID_info['money']
-#         money_win = ID_info['money_win']
-#         money += daily_reward
-#         money_win += daily_reward
-#         message = f"Good morning Captain {username}. Here is your daily salary {daily_reward}$. May the space conquest be with you !"
-#         bot.sendMessage(user_id, message)
-#         save_json(user_id, money=money, money_win=money_win)
-
-
 def upgrade_fleet(fleet_size):
     x1 = 10
     y1 = 0.5
     x2 = 40
     y2 = 1
     slope = (y2 - y1) / (x2 - x1)
-    if fleet_size < 50:
-        y_fleet_size = y1 + (fleet_size - x1) * slope
-        price = math.floor(100 * math.exp(5 * y_fleet_size))
-    elif fleet_size == 50:
-        y_fleet_size = y1 + (100 - x1) * slope
-        price = math.floor(100 * math.exp(5 * y_fleet_size))
+    y_fleet_size = y1 + (fleet_size - x1) * slope
+    price = math.floor(100 * math.exp(5 * y_fleet_size))
     return price
