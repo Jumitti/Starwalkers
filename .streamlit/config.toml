@@ -5,5 +5,5 @@ secondaryBackgroundColor="#806767"
 textColor="##E8E8E8"
 font="monospace"
 
-#[client]
-#showSidebarNavigation = false
+[server]
+port=8502
