@@ -1,5 +1,4 @@
 # created by virtualenv automatically
-telegram_bot (not maintened)/SECRETS.json
 user/*
 !user/
 .idea/*
