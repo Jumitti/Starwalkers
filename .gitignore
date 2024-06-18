@@ -3,3 +3,4 @@ user/*
 !user/
 .idea/*
 !.idea
+streamlit_app.log
