@@ -246,6 +246,7 @@ def add_ship(username, new_ship, add_to, fight=False):
 
     conn.close()
 
+
 # Fonction pour supprimer une navette spécifique d'un utilisateur
 def sell_ship(username, ship):
     conn = sqlite3.connect('user/users.db')
@@ -355,5 +356,21 @@ def buy_cases(username, case):
     st.session_state.money = user[3]
     st.session_state.money_spent = user[11]
     st.session_state.case_purchased = user[12]
+
+    conn.close()
+
+
+# Upgrade fleet size
+def upgrade_fleet_size(username, amount):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+    c.execute("UPDATE users SET fleet_size=fleet_size + ?, money=money - ?, money_spent=money_spent + ? WHERE username=?", (5, amount, amount, username))
+    conn.commit()
+
+    # Mettre à jour st.session_state.money
+    user = get_user(username)
+    st.session_state.money = user[3]
+    st.session_state.fleet_size = user[6]
+    st.session_state.money_spent = user[11]
 
     conn.close()
