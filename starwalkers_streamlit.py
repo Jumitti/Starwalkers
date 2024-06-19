@@ -219,37 +219,6 @@ elif st.session_state.page == "game":
         with col1.container(border=True):
             df, value_list = ID_card.ID_card(st.session_state.username)
 
-        # id_card.header(f"🧑🏽‍🚀 Captain {st.session_state.username}'s ID Card {display_stars(st.session_state.grade)}")
-        #
-        # id_card.subheader("Resources")
-        # colres1, colres2, colres3 = id_card.columns(3, gap="small")
-        # colres1.metric(f"💲 Money", f"{st.session_state.money}$")
-        # colres2.metric(f"💵 Money earned", f"{st.session_state.money_win}$")
-        # colres3.metric(f"🏷️ Money spent", f"{st.session_state.money_spent}$")
-        #
-        # id_card.subheader("Space Fleet")
-        # with id_card.expander(f"🚀 Space fleet capacity: {st.session_state.fleet_size} ships", expanded=True):
-        #     if st.session_state.ship_list:
-        #         for ship in json.loads(st.session_state.ship_list):
-        #             ship_data.append(
-        #                 {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'), "Sell": get_cost(ship)})
-        #             if get_d_sym(get_cost(ship)) not in value_list:
-        #                 value_list.append(get_d_sym(get_cost(ship)))
-        #         if ship_data:
-        #             df = pd.DataFrame(ship_data).sort_values(by="Sell", ascending=False)
-        #             styled_df = df.style.set_table_styles(
-        #                 [
-        #                     {'selector': 'th', 'props': [('max-width', '150px')]},
-        #                     {'selector': 'td', 'props': [('max-width', '150px')]}
-        #                 ]
-        #             ).set_properties(**{'text-align': 'left'})
-        #             st.dataframe(styled_df, use_container_width=True, hide_index=True)
-        #
-        # id_card.subheader("Battles")
-        # colbattle1, colbattle2, colbattle3 = id_card.columns(3, gap="small")
-        # colbattle1.metric(f"🏆 Win", f"{st.session_state.win}")
-        # colbattle2.metric(f"💥 Loose", f"{st.session_state.loose}")
-        # colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{st.session_state.ratio_WL}")
     except Exception as e:
         col1.error(f"Problem with ID card: {e}")
         logging.exception(f"Error: {e}")
