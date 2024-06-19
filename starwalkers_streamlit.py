@@ -8,6 +8,7 @@ import streamlit as st
 
 from starwalkers import sql
 from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
+from panel import ID_card
 
 import logging
 
@@ -215,39 +216,40 @@ elif st.session_state.page == "game":
 
     # Main ID card
     try:
-        id_card = col1.container(border=True)
+        with col1.container(border=True):
+            df = ID_card.ID_card(st.session_state.username)
 
-        id_card.header(f"🧑🏽‍🚀 Captain {st.session_state.username}'s ID Card {display_stars(st.session_state.grade)}")
-
-        id_card.subheader("Resources")
-        colres1, colres2, colres3 = id_card.columns(3, gap="small")
-        colres1.metric(f"💲 Money", f"{st.session_state.money}$")
-        colres2.metric(f"💵 Money earned", f"{st.session_state.money_win}$")
-        colres3.metric(f"🏷️ Money spent", f"{st.session_state.money_spent}$")
-
-        id_card.subheader("Space Fleet")
-        with id_card.expander(f"🚀 Space fleet capacity: {st.session_state.fleet_size} ships", expanded=True):
-            if st.session_state.ship_list:
-                for ship in json.loads(st.session_state.ship_list):
-                    ship_data.append(
-                        {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'), "Sell": get_cost(ship)})
-                    if get_d_sym(get_cost(ship)) not in value_list:
-                        value_list.append(get_d_sym(get_cost(ship)))
-                if ship_data:
-                    df = pd.DataFrame(ship_data).sort_values(by="Sell", ascending=False)
-                    styled_df = df.style.set_table_styles(
-                        [
-                            {'selector': 'th', 'props': [('max-width', '150px')]},
-                            {'selector': 'td', 'props': [('max-width', '150px')]}
-                        ]
-                    ).set_properties(**{'text-align': 'left'})
-                    st.dataframe(styled_df, use_container_width=True, hide_index=True)
-
-        id_card.subheader("Battles")
-        colbattle1, colbattle2, colbattle3 = id_card.columns(3, gap="small")
-        colbattle1.metric(f"🏆 Win", f"{st.session_state.win}")
-        colbattle2.metric(f"💥 Loose", f"{st.session_state.loose}")
-        colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{st.session_state.ratio_WL}")
+        # id_card.header(f"🧑🏽‍🚀 Captain {st.session_state.username}'s ID Card {display_stars(st.session_state.grade)}")
+        #
+        # id_card.subheader("Resources")
+        # colres1, colres2, colres3 = id_card.columns(3, gap="small")
+        # colres1.metric(f"💲 Money", f"{st.session_state.money}$")
+        # colres2.metric(f"💵 Money earned", f"{st.session_state.money_win}$")
+        # colres3.metric(f"🏷️ Money spent", f"{st.session_state.money_spent}$")
+        #
+        # id_card.subheader("Space Fleet")
+        # with id_card.expander(f"🚀 Space fleet capacity: {st.session_state.fleet_size} ships", expanded=True):
+        #     if st.session_state.ship_list:
+        #         for ship in json.loads(st.session_state.ship_list):
+        #             ship_data.append(
+        #                 {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'), "Sell": get_cost(ship)})
+        #             if get_d_sym(get_cost(ship)) not in value_list:
+        #                 value_list.append(get_d_sym(get_cost(ship)))
+        #         if ship_data:
+        #             df = pd.DataFrame(ship_data).sort_values(by="Sell", ascending=False)
+        #             styled_df = df.style.set_table_styles(
+        #                 [
+        #                     {'selector': 'th', 'props': [('max-width', '150px')]},
+        #                     {'selector': 'td', 'props': [('max-width', '150px')]}
+        #                 ]
+        #             ).set_properties(**{'text-align': 'left'})
+        #             st.dataframe(styled_df, use_container_width=True, hide_index=True)
+        #
+        # id_card.subheader("Battles")
+        # colbattle1, colbattle2, colbattle3 = id_card.columns(3, gap="small")
+        # colbattle1.metric(f"🏆 Win", f"{st.session_state.win}")
+        # colbattle2.metric(f"💥 Loose", f"{st.session_state.loose}")
+        # colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{st.session_state.ratio_WL}")
     except Exception as e:
         col1.error(f"Problem with ID card: {e}")
         logging.exception(f"Error: {e}")
@@ -284,7 +286,7 @@ elif st.session_state.page == "game":
         with shop.expander("**🚀 ➡ 💲 Sell shuttle**", expanded=True):
             colsellship1, colsellship2 = st.columns([2, 1], gap="small")
 
-            if ship_data:
+            if not df.empty:
                 sell = colsellship1.multiselect("Sell ship", df["Ship"].tolist(), label_visibility="collapsed",
                                                 placeholder="Select shuttles for sale")
                 price = sum(get_cost(ship) for ship in sell)
@@ -326,62 +328,25 @@ elif st.session_state.page == "game":
 
     # Community
     try:
-        community = col2.container(border=True)
-        usernames = sql.get_user()
-        default_user = st.session_state.username if st.session_state.username in sql.get_user() else usernames[0]
-        selected_username = community.selectbox('👨🏽‍🚀 See a Captain', usernames, placeholder="Choose a captain")
-        if selected_username:
-            user_info = sql.get_user(selected_username)
-            if user_info:
-                community.header(f"🧑🏽‍🚀 Captain {user_info[0]}'s ID Card {display_stars(user_info[11])}")
+        with col2.container(border=True):
+            usernames = sql.get_user()
+            default_user = st.session_state.username if st.session_state.username in sql.get_user() else usernames[0]
+            selected_username = st.selectbox('👨🏽‍🚀 See a Captain', usernames, placeholder="Choose a captain")
+            if selected_username:
+                ID_card.ID_card(selected_username)
 
-                community.subheader("Resources")
-                colres1, colres2, colres3 = community.columns(3, gap="small")
-                colres1.metric(f"💲 Money", f"{user_info[2]}$")
-                colres2.metric(f"💵 Money earned", f"{user_info[9]}$")
-                colres3.metric(f"🏷️ Money spent", f"{user_info[10]}$")
-
-                community.subheader("Space Fleet")
-                with community.expander(f"🚀 Space fleet capacity: {user_info[5]} ships", expanded=True):
-                    if user_info[3]:
-                        ship_data_selected = []
-                        value_list_selected = []
-                        for ship in json.loads(user_info[3]):
-                            ship_data_selected.append(
-                                {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'),
-                                 "Sell": get_cost(ship)})
-                            if get_d_sym(get_cost(ship)) not in value_list_selected:
-                                value_list_selected.append(get_d_sym(get_cost(ship)))
-                        if ship_data_selected:
-                            df_community = pd.DataFrame(ship_data_selected).sort_values(by="Sell", ascending=False)
-                            styled_df = df.style.set_table_styles(
-                                [
-                                    {'selector': 'th', 'props': [('max-width', '150px')]},
-                                    {'selector': 'td', 'props': [('max-width', '150px')]}
-                                ]
-                            ).set_properties(**{'text-align': 'left'})
-                            st.dataframe(styled_df, use_container_width=True, hide_index=True)
-
-                community.subheader("Battles")
-                colbattle1, colbattle2, colbattle3 = community.columns(3, gap="small")
-                colbattle1.metric(f"🏆 Win", f"{user_info[6]}")
-                colbattle2.metric(f"💥 Loose", f"{user_info[7]}")
-                colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{user_info[8]}")
-
-                colsm1, colsm2 = community.columns([2, 1], gap="small")
+                colsm1, colsm2 = st.columns([2, 1], gap="small")
                 send_money = colsm1.slider("💸 Send money", step=1, min_value=0,
                                            max_value=st.session_state.money if st.session_state.money > 0 else 1,
                                            disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False)
 
                 colsm2.markdown("")
-                if colsm2.button(f"Send {send_money}$ to {user_info[0]}",
+                if colsm2.button(f"Send {send_money}$ to {selected_username}",
                                  disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False):
-                    sql.update_money(user_info[0], send_money, context="receiver")
+                    sql.update_money(selected_username, send_money, context="receiver")
                     sql.update_money(st.session_state.username, send_money, context="sender")
-                    st.toast(f"💸 {send_money}$ sends to {user_info[0]}")
+                    st.toast(f"💸 {send_money}$ sends to {selected_username}")
                     time.sleep(0.75) & st.rerun()
-            else:
-                col2.write("User not found.")
     except Exception as e:
         col2.error(f"Problem with Community: {e}")
         logging.exception(f"Error: {e}")
@@ -426,7 +391,7 @@ elif st.session_state.page == "game":
                 ]).set_properties(**{'text-align': 'left'})
                 colfight2.dataframe(styled_selected_df_enemy, use_container_width=True, hide_index=True)
 
-            if ship_data and enemy_data:
+            if not df.empty and enemy_data:
                 colselectfight1, colselectfight2 = battle.columns([2, 1], gap="small")
                 shuttles_for_fight = colselectfight1.multiselect("Select shuttles to fight", df["Ship"].tolist(),
                                                                  label_visibility="collapsed",
@@ -484,7 +449,7 @@ elif st.session_state.page == "game":
                     else:
                         st.toast("✊🏽 We will not run away from this battle!")
 
-            elif not ship_data:
+            elif df.empty:
                 battle.warning("You don't have shuttles")
 
         if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_data) > 0 else False):
