@@ -30,23 +30,16 @@ def init_db():
                  ratio_WL REAL,
                  money_win INTEGER,
                  money_spent INTEGER,
-                 grade INTEGER, p_letter REAL, p_number REAL)''')
-
-    # Copier les données de l'ancienne table vers la nouvelle table temporaire
-    c.execute('''INSERT INTO users_temp (username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number)
-                SELECT username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number
-               FROM users''')
-    
-    # Supprimer l'ancienne table
-    c.execute('DROP TABLE users')
-    
-    # Renommer la table temporaire
-    c.execute('ALTER TABLE users_temp RENAME TO users')
+                 grade INTEGER)''')
     
     # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
     columns = [column[1] for column in c.fetchall()]
 
+    if 'case_purchased' in columns:
+        c.execute('ALTER TABLE users DROP COLUMN case_purchased')
+    if 'case_open' in columns:
+        c.execute('ALTER TABLE users DROP COLUMN case_open')
     if 'p_letter' not in columns:
         c.execute('ALTER TABLE users ADD COLUMN p_letter REAL DEFAULT 0.5')
         c.execute('UPDATE users SET p_letter = 0.5 WHERE p_letter IS NULL')
