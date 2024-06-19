@@ -266,7 +266,7 @@ elif st.session_state.page == "game":
                                         max_value=int(min(st.session_state.fleet_size - len(ship_data),
                                                       st.session_state.money / 10) if min(
                                             st.session_state.fleet_size - len(ship_data),
-                                            st.session_state.money / 10) > 0 else 1),
+                                            st.session_state.money / 10) >= 1 else 1),
                                         disabled=True if st.session_state.money < 10 or len(
                                             ship_data) >= st.session_state.fleet_size else False)
 
@@ -353,7 +353,7 @@ elif st.session_state.page == "game":
                             if get_d_sym(get_cost(ship)) not in value_list_selected:
                                 value_list_selected.append(get_d_sym(get_cost(ship)))
                         if ship_data_selected:
-                            df = pd.DataFrame(ship_data_selected).sort_values(by="Sell", ascending=False)
+                            df_community = pd.DataFrame(ship_data_selected).sort_values(by="Sell", ascending=False)
                             styled_df = df.style.set_table_styles(
                                 [
                                     {'selector': 'th', 'props': [('max-width', '150px')]},
