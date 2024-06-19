@@ -431,7 +431,7 @@ elif st.session_state.page == "game":
                 shuttles_for_fight = colselectfight1.multiselect("Select shuttles to fight", df["Ship"].tolist(),
                                                                  label_visibility="collapsed",
                                                                  placeholder="Select shuttles to fight (max:4)",
-                                                                 max_selections=4)
+                                                                 max_selections=4, default=df["Ship"].tolist()[:4])
                 value_player = sum(get_cost(ship) for ship in shuttles_for_fight)
                 value_enemies = sum(get_cost(ship) for ship in styled_df_enemy["Ship"])
                 # colselectfight2.write(value_enemies)
