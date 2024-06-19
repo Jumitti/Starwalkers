@@ -13,7 +13,7 @@ import logging
 
 logging.basicConfig(
     filename='streamlit_app.log',  # Spécifiez le chemin complet si nécessaire
-    level=logging.ERROR,            # Niveau de journalisation (INFO par exemple)
+    level=logging.ERROR,  # Niveau de journalisation (INFO par exemple)
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
@@ -35,7 +35,7 @@ def game():
 def display_stars(grade):
     full_star = '⭐'  # Emoji pour étoile pleine
     empty_star = '☆'  # Emoji pour étoile vide
-    max_stars = 5     # Nombre maximum d'étoiles à afficher
+    max_stars = 5  # Nombre maximum d'étoiles à afficher
 
     stars = full_star * grade + empty_star * (max_stars - grade)
     return stars
@@ -271,8 +271,9 @@ elif st.session_state.page == "game":
                                             ship_data) >= st.session_state.fleet_size else False)
 
         colopencase2.markdown("")
-        if colopencase2.button(f"Open {open_case} case(s) for {open_case * 10}$", disabled=True if st.session_state.money < 10 or len(
-                ship_data) >= st.session_state.fleet_size else False):
+        if colopencase2.button(f"Open {open_case} case(s) for {open_case * 10}$",
+                               disabled=True if st.session_state.money < 10 or len(
+                                       ship_data) >= st.session_state.fleet_size else False):
             for i in range(0, open_case):
                 ship = roll(proba_letter=st.session_state.p_letter, proba_number=st.session_state.p_number)
                 sql.add_ship(st.session_state.username, ship, price=10, add_to="player")
@@ -322,7 +323,7 @@ elif st.session_state.page == "game":
     except Exception as e:
         col2.error(f"Problem with Shop: {e}")
         logging.exception(f"Error: {e}")
-    
+
     # Community
     try:
         community = col2.container(border=True)
@@ -347,7 +348,8 @@ elif st.session_state.page == "game":
                         value_list_selected = []
                         for ship in json.loads(user_info[3]):
                             ship_data_selected.append(
-                                {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'), "Sell": get_cost(ship)})
+                                {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'),
+                                 "Sell": get_cost(ship)})
                             if get_d_sym(get_cost(ship)) not in value_list_selected:
                                 value_list_selected.append(get_d_sym(get_cost(ship)))
                         if ship_data_selected:
@@ -365,6 +367,18 @@ elif st.session_state.page == "game":
                 colbattle1.metric(f"🏆 Win", f"{user_info[6]}")
                 colbattle2.metric(f"💥 Loose", f"{user_info[7]}")
                 colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{user_info[8]}")
+
+                colsm1, colsm2 = community.columns([2, 1], gap="small")
+                send_money = colsm1.slider("💸 Send money", step=1, min_value=0,
+                                              max_value=st.session_state.money if st.session_state.money > 0 else 1,
+                                              disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False)
+
+                colsm2.markdown("")
+                if colsm2.button(f"Send {send_money}$ to {user_info[0]}", disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False):
+                    sql.update_money(user_info[0], send_money, context="receiver")
+                    sql.update_money(st.session_state.username, send_money, context="sender")
+                    st.toast(f"💸 {send_money}$ sends to {user_info[0]}")
+                    time.sleep(0.75) & st.rerun()
             else:
                 col2.write("User not found.")
     except Exception as e:
@@ -425,7 +439,7 @@ elif st.session_state.page == "game":
                     damage = random.randint(0, 30)
                     if value_player > value_enemies:
                         money_win = sum(get_cost(ship) for ship in styled_df_enemy['Ship']) // 1.5
-                        sql.update_money(st.session_state.username, money_win if money_win != 0 else 1)
+                        sql.update_money(st.session_state.username, money_win if money_win != 0 else 1, context="win")
                         for ship in styled_df_enemy['Ship']:
                             sql.remove_ship(st.session_state.username, ship, "enemies")
                         st.session_state.pop('selected_ships_enemy', None)
@@ -455,7 +469,8 @@ elif st.session_state.page == "game":
                             else:
                                 sql.remove_ship(st.session_state.username, ship, "enemies", fight=True)
                         st.session_state.pop('selected_ships_enemy', None)
-                        st.toast(f'💥 You lost the battle and {" ".join(ship for ship in shuttles_for_fight)} shuttle(s)')
+                        st.toast(
+                            f'💥 You lost the battle and {" ".join(ship for ship in shuttles_for_fight)} shuttle(s)')
                         time.sleep(0.75) & st.rerun()
 
                 if colwar2.button("🏃‍♂️Leave fight"):

@@ -33,15 +33,15 @@ def init_db():
                  grade INTEGER, p_letter REAL, p_number REAL)''')
 
     # Copier les données de l'ancienne table vers la nouvelle table temporaire
-    # c.execute('''INSERT INTO users_temp (username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number)
-    #             SELECT username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number
-    #            FROM users''')
+    c.execute('''INSERT INTO users_temp (username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number)
+                SELECT username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number
+               FROM users''')
     
     # Supprimer l'ancienne table
-    # c.execute('DROP TABLE users')
+    c.execute('DROP TABLE users')
     
     # Renommer la table temporaire
-    # c.execute('ALTER TABLE users_temp RENAME TO users')
+    c.execute('ALTER TABLE users_temp RENAME TO users')
     
     # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
@@ -154,16 +154,26 @@ def get_user(username=None):
 
 
 # Fonction pour mettre à jour les informations de l'utilisateur (argent)
-def update_money(username, amount):
+def update_money(username, amount, context="win"):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
-    c.execute("UPDATE users SET money=money + ?, money_win=money_win + ? WHERE username=?", (amount, amount, username))
+
+    if context == 'sender':
+        c.execute("UPDATE users SET money=money - ?, money_spent=money_spent + ? WHERE username=?", (amount, amount, username))
+
+    elif context == "receiver" or context == "win":
+        c.execute("UPDATE users SET money=money + ?, money_win=money_win + ? WHERE username=?", (amount, amount, username))
+
     conn.commit()
 
-    # Mettre à jour st.session_state.money
-    user = get_user(username)
-    st.session_state.money = user[2]  # Récupérer le nouveau montant d'argent mis à jour
-    st.session_state.money_win = user[9]
+    if context == "sender":
+        user = get_user(username)
+        st.session_state.money = user[2]
+        st.session_state.money_spent = user[10]
+    elif context == 'win':
+        user = get_user(username)
+        st.session_state.money = user[2]
+        st.session_state.money_win = user[9]
 
     conn.close()
 
