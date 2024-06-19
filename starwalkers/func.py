@@ -35,25 +35,40 @@ def got_let_int(letter):  # Letter value
     return letters.get(letter, 0)
 
 
-def roll(minimum=None, maximum=None, letter=None, number=None):  # Generate, modify ships
-    if letter is None:
-        letters = ["*", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-                   'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-        with open('probabilities/probabilities_letter.json', 'r') as f:
-            probabilities = json.load(f)
-        ship_let = random.choices(letters, weights=probabilities)[0]
-    else:
+def roll(proba_letter=None, proba_number=None, number_min=None, number_max=None, letter_min=None, letter_max=None, number=None, letter=None):  # Generate, modify ships
+    letters = ["*", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+               'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
+    if letter_min or letter_max:
+        min_index = letters.index(letter_min.upper())
+        max_index = letters.index(letter_max.upper())
+        if min_index < max_index:
+            sub_letters = letters[min_index:max_index + 1]
+        else:
+            sub_letters = letters[max_index:min_index + 1]
+        ship_let = random.choice(sub_letters)
+
+    elif letter is not None:
         ship_let = letter
 
-    if minimum or maximum:
-        minimum = 0 if minimum is None else minimum
-        maximum = 9999 if maximum is None else maximum
-        ran = random.randint(minimum, maximum) if number is None else number
+    else:
+        letters = ["*", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+                   'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        with open(f'probabilities/probabilities_letter_{proba_letter}.json', 'r') as f:
+            probabilities = json.load(f)
+        ship_let = random.choices(letters, weights=probabilities)[0]
+
+    if number_min or number_max:
+        number_min = 0 if number_min is None else number_min
+        number_max = 9999 if number_max is None else number_max
+        ran = random.randint(number_min, number_max) if number is None else number
+
     elif number is not None:
         ran = number
+
     else:
         digits = list(range(10000))
-        with open('probabilities/probabilities_number.json', 'r') as f:
+        with open(f'probabilities/probabilities_number_{proba_number}.json', 'r') as f:
             probabilities_number = json.load(f)
         ran = random.choices(digits, weights=probabilities_number)[0]
 
