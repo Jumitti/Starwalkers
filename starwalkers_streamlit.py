@@ -263,17 +263,17 @@ elif st.session_state.page == "game":
             min(st.session_state.fleet_size - len(ship_data), st.session_state.money / 10) / 2) if min(
             st.session_state.fleet_size - len(ship_data), st.session_state.money / 10) > 0 else 1,
                                         step=1, min_value=0,
-                                        max_value=min(st.session_state.fleet_size - len(ship_data),
+                                        max_value=int(min(st.session_state.fleet_size - len(ship_data),
                                                       st.session_state.money / 10) if min(
                                             st.session_state.fleet_size - len(ship_data),
-                                            st.session_state.money / 10) > 0 else 1,
+                                            st.session_state.money / 10) > 0 else 1),
                                         disabled=True if st.session_state.money < 10 or len(
                                             ship_data) >= st.session_state.fleet_size else False)
 
         colopencase2.markdown("")
         if colopencase2.button(f"Open {open_case} case(s) for {open_case * 10}$",
                                disabled=True if st.session_state.money < 10 or len(
-                                       ship_data) >= st.session_state.fleet_size else False):
+                                   ship_data) >= st.session_state.fleet_size else False):
             for i in range(0, open_case):
                 ship = roll(proba_letter=st.session_state.p_letter, proba_number=st.session_state.p_number)
                 sql.add_ship(st.session_state.username, ship, price=10, add_to="player")
@@ -370,11 +370,12 @@ elif st.session_state.page == "game":
 
                 colsm1, colsm2 = community.columns([2, 1], gap="small")
                 send_money = colsm1.slider("💸 Send money", step=1, min_value=0,
-                                              max_value=st.session_state.money if st.session_state.money > 0 else 1,
-                                              disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False)
+                                           max_value=st.session_state.money if st.session_state.money > 0 else 1,
+                                           disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False)
 
                 colsm2.markdown("")
-                if colsm2.button(f"Send {send_money}$ to {user_info[0]}", disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False):
+                if colsm2.button(f"Send {send_money}$ to {user_info[0]}",
+                                 disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False):
                     sql.update_money(user_info[0], send_money, context="receiver")
                     sql.update_money(st.session_state.username, send_money, context="sender")
                     st.toast(f"💸 {send_money}$ sends to {user_info[0]}")
@@ -463,7 +464,7 @@ elif st.session_state.page == "game":
                             enemy_let, enemy_int = ship.split("-")
                             new_number = int(enemy_int) - (damage // len(styled_df_enemy))
                             if new_number >= 0:
-                                update_ship = roll(letter_min=enemy_let, number=new_number)
+                                update_ship = roll(letter=enemy_let, number=new_number)
                                 sql.add_ship(st.session_state.username, update_ship, "enemies", fight=True)
                                 sql.remove_ship(st.session_state.username, ship, "enemies")
                             else:
