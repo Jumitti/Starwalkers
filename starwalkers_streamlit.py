@@ -32,6 +32,15 @@ def game():
     st.session_state.page = "game"
 
 
+def display_stars(grade):
+    full_star = '⭐'  # Emoji pour étoile pleine
+    empty_star = '☆'  # Emoji pour étoile vide
+    max_stars = 5     # Nombre maximum d'étoiles à afficher
+
+    stars = full_star * grade + empty_star * (max_stars - grade)
+    return stars
+
+
 ship_data = []
 enemy_data = []
 value_list = []
@@ -110,6 +119,7 @@ if st.session_state.page == "login":
             else:
                 col2.warning("Please complete all fields")
     except Exception as e:
+        col2.error(f"Problem with login: {e}")
         logging.erro(f"Error: {e}")
 
     if col2.button("Create an account", on_click=register):
@@ -132,7 +142,9 @@ elif st.session_state.page == "register":
             else:
                 col2.warning("Please complete all fields")
     except Exception as e:
+        col2.error(f"Problem with registration: {e}")
         logging.exception(f"Error: {e}")
+
     if col2.button("Return to login", on_click=login):
         st.rerun()
 
@@ -148,6 +160,7 @@ elif st.session_state.page == "game":
             st.toast("Your profile has been successfully reset.")
             time.sleep(0.75) & st.rerun()
         except Exception as e:
+            st.error(f"Problem during reseting your profil: {e}")
             logging.exception(f"Error: {e}")
 
     # Sidebar delete account
@@ -159,10 +172,11 @@ elif st.session_state.page == "game":
                 if sql.check_password(st.session_state.username, password):
                     sql.delete_user(st.session_state.username)
                     st.toast("Your account has been successfully deleted.")
-                    page('register') & st.rerun()
+                    register() & st.rerun()
                 else:
                     st.sidebar.error("Incorrect password. Try Again.")
             except Exception as e:
+                st.error(f"Problem with deletion: {e}")
                 logging.exception(f"Error: {e}")
 
     # Sidebar sign out
@@ -196,12 +210,14 @@ elif st.session_state.page == "game":
             st.session_state.p_number = None
             login() & st.rerun()
         except Exception as e:
+            col2.error(f"Problem during sign out: {e}")
             logging.exception(f"Error: {e}")
 
     # Main ID card
     try:
         id_card = col1.container(border=True)
-        id_card.header(f"🧑🏽‍🚀 Captain {st.session_state.username}'s Identity Card")
+
+        id_card.header(f"🧑🏽‍🚀 Captain {st.session_state.username}'s ID Card {display_stars(st.session_state.grade)}")
 
         id_card.subheader("Resources")
         colres1, colres2, colres3 = id_card.columns(3, gap="small")
@@ -233,6 +249,7 @@ elif st.session_state.page == "game":
         colbattle2.metric(f"💥 Loose", f"{st.session_state.loose}")
         colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{st.session_state.ratio_WL}")
     except Exception as e:
+        col1.error(f"Problem with ID card: {e}")
         logging.exception(f"Error: {e}")
 
     # Main shop
@@ -303,6 +320,55 @@ elif st.session_state.page == "game":
             sql.upgrade_fleet_size(st.session_state.username, upgrade_fleet(st.session_state.fleet_size))
             time.sleep(0.75) & st.rerun()
     except Exception as e:
+        col2.error(f"Problem with Shop: {e}")
+        logging.exception(f"Error: {e}")
+    
+    # Community
+    try:
+        community = col2.container(border=True)
+        usernames = sql.get_user()
+        default_user = st.session_state.username if st.session_state.username in sql.get_user() else usernames[0]
+        selected_username = community.selectbox('👨🏽‍🚀 See a Captain', usernames, placeholder="Choose a captain")
+        if selected_username:
+            user_info = sql.get_user(selected_username)
+            if user_info:
+                community.header(f"🧑🏽‍🚀 Captain {user_info[0]}'s ID Card {display_stars(user_info[11])}")
+
+                community.subheader("Resources")
+                colres1, colres2, colres3 = community.columns(3, gap="small")
+                colres1.metric(f"💲 Money", f"{user_info[2]}$")
+                colres2.metric(f"💵 Money earned", f"{user_info[9]}$")
+                colres3.metric(f"🏷️ Money spent", f"{user_info[10]}$")
+
+                community.subheader("Space Fleet")
+                with community.expander(f"🚀 Space fleet capacity: {user_info[5]} ships", expanded=True):
+                    if user_info[3]:
+                        ship_data_selected = []
+                        value_list_selected = []
+                        for ship in json.loads(user_info[3]):
+                            ship_data_selected.append(
+                                {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'), "Sell": get_cost(ship)})
+                            if get_d_sym(get_cost(ship)) not in value_list_selected:
+                                value_list_selected.append(get_d_sym(get_cost(ship)))
+                        if ship_data_selected:
+                            df = pd.DataFrame(ship_data_selected).sort_values(by="Sell", ascending=False)
+                            styled_df = df.style.set_table_styles(
+                                [
+                                    {'selector': 'th', 'props': [('max-width', '150px')]},
+                                    {'selector': 'td', 'props': [('max-width', '150px')]}
+                                ]
+                            ).set_properties(**{'text-align': 'left'})
+                            st.dataframe(styled_df, use_container_width=True, hide_index=True)
+
+                community.subheader("Battles")
+                colbattle1, colbattle2, colbattle3 = community.columns(3, gap="small")
+                colbattle1.metric(f"🏆 Win", f"{user_info[6]}")
+                colbattle2.metric(f"💥 Loose", f"{user_info[7]}")
+                colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{user_info[8]}")
+            else:
+                col2.write("User not found.")
+    except Exception as e:
+        col2.error(f"Problem with Community: {e}")
         logging.exception(f"Error: {e}")
 
     # Battle
@@ -412,4 +478,5 @@ elif st.session_state.page == "game":
             st.toast("⚔️ The enemies enter the battles")
             time.sleep(0.75) & st.rerun()
     except Exception as e:
+        col3.error(f"Problem with Battle: {e}")
         logging.exception(f"Error: {e}")

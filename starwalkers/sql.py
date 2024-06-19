@@ -30,19 +30,19 @@ def init_db():
                  ratio_WL REAL,
                  money_win INTEGER,
                  money_spent INTEGER,
-                 grade INTEGER)''')
+                 grade INTEGER, p_letter REAL, p_number REAL)''')
 
-    # # Copier les données de l'ancienne table vers la nouvelle table temporaire
-    # c.execute('''INSERT INTO users_temp (username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade)
-    #              SELECT username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade
-    #              FROM users''')
-    #
-    # # Supprimer l'ancienne table
+    # Copier les données de l'ancienne table vers la nouvelle table temporaire
+    # c.execute('''INSERT INTO users_temp (username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number)
+    #             SELECT username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number
+    #            FROM users''')
+    
+    # Supprimer l'ancienne table
     # c.execute('DROP TABLE users')
-    #
-    # # Renommer la table temporaire
+    
+    # Renommer la table temporaire
     # c.execute('ALTER TABLE users_temp RENAME TO users')
-    #
+    
     # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
     columns = [column[1] for column in c.fetchall()]
@@ -66,6 +66,8 @@ def add_user(username, password):
     c.execute("INSERT INTO users (username,"
               "password_hash,"
               "money,"
+              "ship_list,"
+              "enemy_list,"
               "fleet_size,"
               "win,"
               "loose,"
@@ -75,8 +77,8 @@ def add_user(username, password):
               "grade,"
               "p_letter,"
               "p_number)"
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              (username, hashed_password, 100, 10, 0, 0, 0.00, 0, 0, 0, 0.5, -0.0004))
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+              (username, hashed_password, 100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0.5, -0.0004))
     conn.commit()
     conn.close()
 
@@ -138,11 +140,15 @@ def check_password(username, password):
 
 
 # Fonction pour obtenir un utilisateur
-def get_user(username):
+def get_user(username=None):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE username=?", (username,))
-    user = c.fetchone()
+    if username:
+        c.execute("SELECT * FROM users WHERE username=?", (username,))
+        user = c.fetchone()
+    elif not username:
+        c.execute("SELECT username FROM users")
+        user = [row[0] for row in c.fetchall()]
     conn.close()
     return user
 
