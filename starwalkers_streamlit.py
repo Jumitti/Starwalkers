@@ -262,12 +262,12 @@ elif st.session_state.page == "game":
         # Open case
         colopencase1, colopencase2 = shop.columns([2, 1], gap="small")
         open_case = colopencase1.slider("**📦 ➡ 🚀 Buy shuttles**", value=int(
-            min(st.session_state.fleet_size - len(ship_data), st.session_state.money / 10) / 2) if min(
-            st.session_state.fleet_size - len(ship_data), st.session_state.money / 10) > 0 else 1,
+            min(st.session_state.fleet_size - len(df), st.session_state.money / 10) / 2) if min(
+            st.session_state.fleet_size - len(df), st.session_state.money / 10) > 0 else 1,
                                         step=1, min_value=0,
-                                        max_value=int(min(st.session_state.fleet_size - len(ship_data),
+                                        max_value=int(min(st.session_state.fleet_size - len(df),
                                                       st.session_state.money / 10) if min(
-                                            st.session_state.fleet_size - len(ship_data),
+                                            st.session_state.fleet_size - len(df),
                                             st.session_state.money / 10) >= 1 else 1),
                                         disabled=True if st.session_state.money < 10 or len(
                                             ship_data) >= st.session_state.fleet_size else False)
