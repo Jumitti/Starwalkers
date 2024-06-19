@@ -29,17 +29,17 @@ def ID_card(username):
 
         st.subheader("Space Fleet")
         with st.expander(f"🚀 Space fleet capacity: {user_info[5]} ships", expanded=True):
-            if user_info[3]:
-                ship_data_selected = []
-                value_list_selected = []
+            ship_data = []
+            value_list = []
+            if len(user_info[3]) > 2:
                 for ship in json.loads(user_info[3]):
-                    ship_data_selected.append(
+                    ship_data.append(
                         {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'),
                          "Sell": get_cost(ship)})
-                    if get_d_sym(get_cost(ship)) not in value_list_selected:
-                        value_list_selected.append(get_d_sym(get_cost(ship)))
-                if ship_data_selected:
-                    df = pd.DataFrame(ship_data_selected).sort_values(by="Sell", ascending=False)
+                    if get_d_sym(get_cost(ship)) not in value_list:
+                        value_list.append(get_d_sym(get_cost(ship)))
+                if ship_data:
+                    df = pd.DataFrame(ship_data).sort_values(by="Sell", ascending=False)
                     styled_df = df.style.set_table_styles(
                         [
                             {'selector': 'th', 'props': [('max-width', '150px')]},
@@ -56,4 +56,4 @@ def ID_card(username):
         colbattle2.metric(f"💥 Loose", f"{user_info[7]}")
         colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{user_info[8]}")
 
-        return df
+        return df, value_list

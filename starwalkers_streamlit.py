@@ -217,7 +217,7 @@ elif st.session_state.page == "game":
     # Main ID card
     try:
         with col1.container(border=True):
-            df = ID_card.ID_card(st.session_state.username)
+            df, value_list = ID_card.ID_card(st.session_state.username)
 
         # id_card.header(f"🧑🏽‍🚀 Captain {st.session_state.username}'s ID Card {display_stars(st.session_state.grade)}")
         #
