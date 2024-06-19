@@ -17,11 +17,10 @@ def init_db():
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    # Crée la table si elle n'existe pas déjà
-    c.execute('''CREATE TABLE IF NOT EXISTS users
+    # Crée une table temporaire sans la colonne 'money'
+    c.execute('''CREATE TABLE IF NOT EXISTS users_temp
                  (username TEXT PRIMARY KEY,
                  password_hash TEXT,
-                 cases INTEGER,
                  money INTEGER,
                  ship_list TEXT,
                  enemy_list TEXT,
@@ -31,16 +30,29 @@ def init_db():
                  ratio_WL REAL,
                  money_win INTEGER,
                  money_spent INTEGER,
-                 case_purchased INTEGER,
-                 case_open INTEGER)''')
+                 grade INTEGER)''')
 
-    # Vérifie si la colonne 'grade' existe, sinon l'ajoute
+    # # Copier les données de l'ancienne table vers la nouvelle table temporaire
+    # c.execute('''INSERT INTO users_temp (username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade)
+    #              SELECT username, password_hash, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade
+    #              FROM users''')
+    #
+    # # Supprimer l'ancienne table
+    # c.execute('DROP TABLE users')
+    #
+    # # Renommer la table temporaire
+    # c.execute('ALTER TABLE users_temp RENAME TO users')
+    #
+    # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
     columns = [column[1] for column in c.fetchall()]
 
-    if 'grade' not in columns:
-        c.execute('ALTER TABLE users ADD COLUMN grade INTEGER DEFAULT 0')
-        c.execute('UPDATE users SET grade = 0 WHERE grade IS NULL')
+    if 'p_letter' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN p_letter REAL DEFAULT 0.5')
+        c.execute('UPDATE users SET p_letter = 0.5 WHERE p_letter IS NULL')
+    if 'p_number' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN p_number REAL DEFAULT -0.0004')
+        c.execute('UPDATE users SET p_number = -0.0004 WHERE p_number IS NULL')
 
     conn.commit()
     conn.close()
@@ -53,7 +65,6 @@ def add_user(username, password):
     hashed_password = hash_password(password)
     c.execute("INSERT INTO users (username,"
               "password_hash,"
-              "cases,"
               "money,"
               "fleet_size,"
               "win,"
@@ -61,11 +72,11 @@ def add_user(username, password):
               "ratio_WL,"
               "money_win,"
               "money_spent,"
-              "case_purchased,"
-              "case_open,"
-              "grade)"
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              (username, hashed_password, 0, 100, 10, 0, 0, 0.00, 0, 0, 0, 0, 0))
+              "grade,"
+              "p_letter,"
+              "p_number)"
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+              (username, hashed_password, 100, 10, 0, 0, 0.00, 0, 0, 0, 0.5, -0.0004))
     conn.commit()
     conn.close()
 
@@ -73,7 +84,7 @@ def add_user(username, password):
 def reset_profile(username):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
-    c.execute("UPDATE users SET cases=?, money=?,"
+    c.execute("UPDATE users SET money=?,"
               "ship_list=?,"
               "enemy_list=?,"
               "fleet_size=?,"
@@ -82,26 +93,25 @@ def reset_profile(username):
               "ratio_WL=?,"
               "money_win=?,"
               "money_spent=?,"
-              "case_purchased=?,"
-              "case_open=?,"
-              "grade=? "
-              "WHERE username=?", (0, 100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0, 0, username))  # Réinitialiser les paramètres nécessaires
+              "grade=?,"
+              "p_letter=?,"
+              "p_number=? "
+              "WHERE username=?", (100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0.5, -0.0004, username))  # Réinitialiser les paramètres nécessaires
     conn.commit()
 
     user = get_user(username)
-    st.session_state.cases = user[2]
-    st.session_state.money = user[3]
-    st.session_state.ship_list = user[4]
-    st.session_state.enemy_list = user[5]
-    st.session_state.fleet_size = user[6]
-    st.session_state.win = user[7]
-    st.session_state.loose = user[8]
-    st.session_state.ratio_WL = user[9]
-    st.session_state.money_win = user[10]
-    st.session_state.money_spent = user[11]
-    st.session_state.case_purchased = user[12]
-    st.session_state.case_open = user[13]
-    st.session_state.grade = user[14]
+    st.session_state.money = user[2]
+    st.session_state.ship_list = user[3]
+    st.session_state.enemy_list = user[4]
+    st.session_state.fleet_size = user[5]
+    st.session_state.win = user[6]
+    st.session_state.loose = user[7]
+    st.session_state.ratio_WL = user[8]
+    st.session_state.money_win = user[9]
+    st.session_state.money_spent = user[10]
+    st.session_state.grade = user[11]
+    st.session_state.p_letter = user[12]
+    st.session_state.p_number = user[13]
 
     conn.close()
 
@@ -146,19 +156,17 @@ def update_money(username, amount):
 
     # Mettre à jour st.session_state.money
     user = get_user(username)
-    st.session_state.money = user[3]  # Récupérer le nouveau montant d'argent mis à jour
-    st.session_state.money_win = user[10]
+    st.session_state.money = user[2]  # Récupérer le nouveau montant d'argent mis à jour
+    st.session_state.money_win = user[9]
 
     conn.close()
 
 
 # Fonction pour mettre à jour les informations de l'utilisateur (cases)
-def update_user(username, cases, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent,
-                case_purchased, case_open, grade):
+def update_user(username, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
-    c.execute("UPDATE users SET cases=?, "
-              "money=?,"
+    c.execute("UPDATE users SET money=?,"
               "ship_list=?,"
               "enemy_list=?,"
               "fleet_size=?,"
@@ -167,12 +175,11 @@ def update_user(username, cases, money, ship_list, enemy_list, fleet_size, win, 
               "ratio_WL=?,"
               "money_win=?,"
               "money_spent=?,"
-              "case_purchased=?,"
-              "case_open=?,"
-              "grade=? "
+              "grade=?,"
+              "p_letter=?,"
+              "p_number=? "
               "WHERE username=?",
-              (cases, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent,
-               case_purchased, case_open, grade, username))
+              (money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number, username))
     conn.commit()
     conn.close()
 
@@ -185,7 +192,7 @@ def delete_user(username):
     conn.close()
 
 
-def add_ship(username, new_ship, add_to, fight=False):
+def add_ship(username, new_ship, add_to, fight=False, price=None):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
@@ -205,22 +212,22 @@ def add_ship(username, new_ship, add_to, fight=False):
 
         # Mettre à jour la base de données avec la nouvelle liste de navettes
         if fight is False:
-            c.execute("UPDATE users SET ship_list=?, cases=cases - ?, case_open=case_open + ? WHERE username=?", (updated_ship_list_json, 1, 1, username))
+            c.execute("UPDATE users SET ship_list=?, money=money - ?, money_spent=money_spent + ? WHERE username=?", (updated_ship_list_json, price, price, username))
             conn.commit()
 
             user = get_user(username)
-            st.session_state.cases = user[2]
-            st.session_state.ship_list = user[4]
-            st.session_state.case_open = user[13]
-        else:
+            st.session_state.money = user[2]
+            st.session_state.ship_list = user[3]
+            st.session_state.money_spent = user[10]
+        elif fight is True:
             c.execute("UPDATE users SET ship_list=?, win=win + ?, ratio_WL = CASE WHEN loose > 0.00 THEN (win + ?) / loose ELSE win + ?  END WHERE username=?",
                       (updated_ship_list_json, 1, 1.00, 1.00, username))
             conn.commit()
 
             user = get_user(username)
             st.session_state.cases = user[2]
-            st.session_state.win = user[7]
-            st.session_state.ratio_WL = user[9]
+            st.session_state.win = user[6]
+            st.session_state.ratio_WL = user[8]
 
     elif add_to == "enemies":
         # Récupérer la ship_list actuelle du joueur
@@ -242,7 +249,7 @@ def add_ship(username, new_ship, add_to, fight=False):
         conn.commit()
 
         user = get_user(username)
-        st.session_state.enemy_list = user[5]
+        st.session_state.enemy_list = user[4]
 
     conn.close()
 
@@ -272,9 +279,9 @@ def sell_ship(username, ship):
     conn.commit()
 
     user = get_user(username)
-    st.session_state.money = user[3]
-    st.session_state.ship_list = user[4]
-    st.session_state.money_win = user[10]
+    st.session_state.money = user[2]
+    st.session_state.ship_list = user[3]
+    st.session_state.money_win = user[9]
 
     conn.close()
 
@@ -305,7 +312,7 @@ def remove_ship(username, ship, remove_from, fight=False):
             conn.commit()
 
             user = get_user(username)
-            st.session_state.ship_list = user[4]
+            st.session_state.ship_list = user[3]
 
         elif fight is True:
             # Mettre à jour la base de données avec la nouvelle liste de navettes
@@ -314,9 +321,9 @@ def remove_ship(username, ship, remove_from, fight=False):
             conn.commit()
 
             user = get_user(username)
-            st.session_state.ship_list = user[4]
-            st.session_state.loose = user[8]
-            st.session_state.ratio_WL = user[9]
+            st.session_state.ship_list = user[3]
+            st.session_state.loose = user[7]
+            st.session_state.ratio_WL = user[8]
 
     elif remove_from == "enemies":
         # Récupérer la ship_list actuelle du joueur
@@ -339,23 +346,7 @@ def remove_ship(username, ship, remove_from, fight=False):
         conn.commit()
 
         user = get_user(username)
-        st.session_state.enemy_list = user[5]
-
-    conn.close()
-
-
-def buy_cases(username, case):
-    conn = sqlite3.connect('user/users.db')
-    c = conn.cursor()
-    c.execute("UPDATE users SET cases=cases + ?, money=money - 10 * ?, money_spent=money_spent + 10 * ?, case_purchased=case_purchased + ? WHERE username=?", (case, case, case, case, username))
-    conn.commit()
-
-    # Mettre à jour st.session_state.money
-    user = get_user(username)
-    st.session_state.cases = user[2]
-    st.session_state.money = user[3]
-    st.session_state.money_spent = user[11]
-    st.session_state.case_purchased = user[12]
+        st.session_state.enemy_list = user[4]
 
     conn.close()
 
@@ -369,8 +360,8 @@ def upgrade_fleet_size(username, amount):
 
     # Mettre à jour st.session_state.money
     user = get_user(username)
-    st.session_state.money = user[3]
-    st.session_state.fleet_size = user[6]
-    st.session_state.money_spent = user[11]
+    st.session_state.money = user[2]
+    st.session_state.fleet_size = user[5]
+    st.session_state.money_spent = user[10]
 
     conn.close()

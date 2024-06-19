@@ -92,19 +92,18 @@ if st.session_state.page == "login":
                 if sql.check_password(username, password):
                     user = sql.get_user(username)
                     st.session_state.username = username
-                    st.session_state.cases = user[2]
-                    st.session_state.money = user[3]
-                    st.session_state.ship_list = user[4]
-                    st.session_state.enemy_list = user[5]
-                    st.session_state.fleet_size = user[6]
-                    st.session_state.win = user[7]
-                    st.session_state.loose = user[8]
-                    st.session_state.ratio_WL = user[9]
-                    st.session_state.money_win = user[10]
-                    st.session_state.money_spent = user[11]
-                    st.session_state.case_purchased = user[12]
-                    st.session_state.case_open = user[13]
-                    st.session_state.grade = user[14]
+                    st.session_state.money = user[2]
+                    st.session_state.ship_list = user[3]
+                    st.session_state.enemy_list = user[4]
+                    st.session_state.fleet_size = user[5]
+                    st.session_state.win = user[6]
+                    st.session_state.loose = user[7]
+                    st.session_state.ratio_WL = user[8]
+                    st.session_state.money_win = user[9]
+                    st.session_state.money_spent = user[10]
+                    st.session_state.grade = user[11]
+                    st.session_state.p_letter = user[12]
+                    st.session_state.p_number = user[13]
                     game() & st.rerun()
                 else:
                     col2.error("Username or password incorrect")
@@ -170,7 +169,6 @@ elif st.session_state.page == "game":
     if st.sidebar.button("👋🏽 Sign out"):
         try:
             sql.update_user(st.session_state.username,
-                            st.session_state.cases,
                             st.session_state.money,
                             st.session_state.ship_list,
                             st.session_state.enemy_list,
@@ -180,11 +178,10 @@ elif st.session_state.page == "game":
                             st.session_state.ratio_WL,
                             st.session_state.money_win,
                             st.session_state.money_spent,
-                            st.session_state.case_purchased,
-                            st.session_state.case_open,
-                            st.session_state.grade)
+                            st.session_state.grade,
+                            st.session_state.p_letter,
+                            st.session_state.p_number)
             st.session_state.username = None
-            st.session_state.cases = None
             st.session_state.money = None
             st.session_state.ship_list = None
             st.session_state.enemy_list = None
@@ -194,9 +191,9 @@ elif st.session_state.page == "game":
             st.session_state.ratio_WL = None
             st.session_state.money_win = None
             st.session_state.money_spent = None
-            st.session_state.case_purchased = None
-            st.session_state.case_open = None
             st.session_state.grade = None
+            st.session_state.p_letter = None
+            st.session_state.p_number = None
             login() & st.rerun()
         except Exception as e:
             logging.exception(f"Error: {e}")
@@ -207,9 +204,10 @@ elif st.session_state.page == "game":
         id_card.header(f"🧑🏽‍🚀 Captain {st.session_state.username}'s Identity Card")
 
         id_card.subheader("Resources")
-        colres1, colres2 = id_card.columns(2, gap="small")
+        colres1, colres2, colres3 = id_card.columns(3, gap="small")
         colres1.metric(f"💲 Money", f"{st.session_state.money}$")
-        colres2.metric(f"📦 Cases", f"{st.session_state.cases}")
+        colres2.metric(f"💵 Money earned", f"{st.session_state.money_win}$")
+        colres3.metric(f"🏷️ Money spent", f"{st.session_state.money_spent}$")
 
         id_card.subheader("Space Fleet")
         with id_card.expander(f"🚀 Space fleet capacity: {st.session_state.fleet_size} ships", expanded=True):
@@ -234,13 +232,6 @@ elif st.session_state.page == "game":
         colbattle1.metric(f"🏆 Win", f"{st.session_state.win}")
         colbattle2.metric(f"💥 Loose", f"{st.session_state.loose}")
         colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{st.session_state.ratio_WL}")
-
-        id_card.subheader("Financial Statistics")
-        colfr1, colfr2, colfr3, colfr4 = id_card.columns(4, gap="small")
-        colfr1.metric(f"💵 Money earned", f"{st.session_state.money_win}$")
-        colfr2.metric(f"🏷️ Money spent", f"{st.session_state.money_spent}$")
-        colfr3.metric(f"📥 Cases purchased", f"{st.session_state.case_purchased}")
-        colfr4.metric(f"📤 Cases opened", f"{st.session_state.case_open}")
     except Exception as e:
         logging.exception(f"Error: {e}")
 
@@ -249,41 +240,25 @@ elif st.session_state.page == "game":
         shop = col2.container(border=True)
         shop.header("🏪 Store")
 
-        # Buy case
-        colbuycase1, colbuycase2 = shop.columns([2, 1], gap="small")
-        buy_cases = colbuycase1.slider("**📦 Buy cases (10$)**",
-                                       value=int(st.session_state.money / 20) if st.session_state.money > 10 else 0,
-                                       step=1, min_value=0,
-                                       max_value=int(st.session_state.money / 10) if st.session_state.money > 10 else 1,
-                                       disabled=True if st.session_state.money < 10 else False)
-
-        colbuycase2.markdown("")
-        if colbuycase2.button(f"Buy {buy_cases} case(s) for {10 * buy_cases}$",
-                              disabled=True if st.session_state.money < 10 else False):
-            sql.buy_cases(st.session_state.username, buy_cases)
-            st.toast(f"You have buy {buy_cases} case(s) for {10 * buy_cases}$.")
-            time.sleep(0.75) & st.rerun()
-
         # Open case
-        st.succes("OK")
         colopencase1, colopencase2 = shop.columns([2, 1], gap="small")
-        open_case = colopencase1.slider("**📦 ➡ 🚀 Open cases**", value=int(
-            min(st.session_state.fleet_size - len(ship_data), st.session_state.cases) / 2) if min(
-            st.session_state.fleet_size - len(ship_data), st.session_state.cases) > 0 else 1,
+        open_case = colopencase1.slider("**📦 ➡ 🚀 Buy shuttles**", value=int(
+            min(st.session_state.fleet_size - len(ship_data), st.session_state.money / 10) / 2) if min(
+            st.session_state.fleet_size - len(ship_data), st.session_state.money / 10) > 0 else 1,
                                         step=1, min_value=0,
                                         max_value=min(st.session_state.fleet_size - len(ship_data),
-                                                      st.session_state.cases) if min(
+                                                      st.session_state.money / 10) if min(
                                             st.session_state.fleet_size - len(ship_data),
-                                            st.session_state.cases) > 0 else 1,
-                                        disabled=True if st.session_state.cases < 1 or len(
+                                            st.session_state.money / 10) > 0 else 1,
+                                        disabled=True if st.session_state.money < 10 or len(
                                             ship_data) >= st.session_state.fleet_size else False)
 
         colopencase2.markdown("")
-        if colopencase2.button(f"Open {open_case} case(s)", disabled=True if st.session_state.cases < 1 or len(
+        if colopencase2.button(f"Open {open_case} case(s) for {open_case * 10}$", disabled=True if st.session_state.money < 10 or len(
                 ship_data) >= st.session_state.fleet_size else False):
             for i in range(0, open_case):
-                ship = roll()
-                sql.add_ship(st.session_state.username, ship, "player")
+                ship = roll(proba_letter=st.session_state.p_letter, proba_number=st.session_state.p_number)
+                sql.add_ship(st.session_state.username, ship, price=10, add_to="player")
             st.toast("🚀 New shuttle(s) in your fleet!")
             time.sleep(0.75) & st.rerun()
 
@@ -408,7 +383,7 @@ elif st.session_state.page == "game":
                             enemy_let, enemy_int = ship.split("-")
                             new_number = int(enemy_int) - (damage // len(styled_df_enemy))
                             if new_number >= 0:
-                                update_ship = roll(letter=enemy_let, number=new_number)
+                                update_ship = roll(letter_min=enemy_let, number=new_number)
                                 sql.add_ship(st.session_state.username, update_ship, "enemies", fight=True)
                                 sql.remove_ship(st.session_state.username, ship, "enemies")
                             else:
@@ -432,7 +407,7 @@ elif st.session_state.page == "game":
 
         if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_data) > 0 else False):
             for _ in range(random.randint(1, 10)):
-                ship = roll()
+                ship = roll(proba_letter=st.session_state.p_letter, proba_number=st.session_state.p_number)
                 sql.add_ship(st.session_state.username, ship, "enemies")
             st.toast("⚔️ The enemies enter the battles")
             time.sleep(0.75) & st.rerun()
