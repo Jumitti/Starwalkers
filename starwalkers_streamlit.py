@@ -155,14 +155,14 @@ elif st.session_state.page == "game":
     st.sidebar.divider()
 
     # Sidebar reset profile
-    if st.sidebar.button("🔃 Reset my profile"):
-        try:
-            sql.reset_profile(st.session_state.username)
-            st.toast("Your profile has been successfully reset.")
-            time.sleep(0.75) & st.rerun()
-        except Exception as e:
-            st.error(f"Problem during reseting your profil: {e}")
-            logging.exception(f"Error: {e}")
+    # if st.sidebar.button("🔃 Reset my profile"):
+    #     try:
+    #         sql.reset_profile(st.session_state.username)
+    #         st.toast("Your profile has been successfully reset.")
+    #         time.sleep(0.75) & st.rerun()
+    #     except Exception as e:
+    #         st.error(f"Problem during reseting your profil: {e}")
+    #         logging.exception(f"Error: {e}")
 
     # Sidebar delete account
     if st.sidebar.toggle("🚮 Delete my account"):
@@ -183,19 +183,6 @@ elif st.session_state.page == "game":
     # Sidebar sign out
     if st.sidebar.button("👋🏽 Sign out"):
         try:
-            sql.update_user(st.session_state.username,
-                            st.session_state.money,
-                            st.session_state.ship_list,
-                            st.session_state.enemy_list,
-                            st.session_state.fleet_size,
-                            st.session_state.win,
-                            st.session_state.loose,
-                            st.session_state.ratio_WL,
-                            st.session_state.money_win,
-                            st.session_state.money_spent,
-                            st.session_state.grade,
-                            st.session_state.p_letter,
-                            st.session_state.p_number)
             st.session_state.username = None
             st.session_state.money = None
             st.session_state.ship_list = None

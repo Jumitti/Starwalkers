@@ -30,7 +30,9 @@ def init_db():
                  ratio_WL REAL,
                  money_win INTEGER,
                  money_spent INTEGER,
-                 grade INTEGER)''')
+                 grade INTEGER,
+                 p_letter REAL,
+                 p_number REAL)''')
     
     # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
