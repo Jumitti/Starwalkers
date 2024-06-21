@@ -8,7 +8,7 @@ import streamlit as st
 
 from starwalkers import sql
 from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
-from panel import ID_card
+from panel import ID_card, shop
 
 import logging
 
@@ -156,16 +156,6 @@ elif st.session_state.page == "game":
     # Sidebar
     st.sidebar.divider()
 
-    # Sidebar reset profile
-    # if st.sidebar.button("🔃 Reset my profile"):
-    #     try:
-    #         sql.reset_profile(st.session_state.username)
-    #         st.toast("Your profile has been successfully reset.")
-    #         time.sleep(0.75) & st.rerun()
-    #     except Exception as e:
-    #         st.error(f"Problem during reseting your profil: {e}")
-    #         logging.exception(f"Error: {e}")
-
     # Sidebar delete account
     if st.sidebar.toggle("🚮 Delete my account"):
         password = st.sidebar.text_input("Entrez votre mot de passe", type="password", label_visibility="collapsed",
@@ -208,7 +198,7 @@ elif st.session_state.page == "game":
     # Main ID card
     try:
         with col1.container(border=True):
-            df, value_list = ID_card.ID_card(st.session_state.username)
+            df, value_list = ID_card.ID_card(st.session_state.username, display='player_info')
 
     except Exception as e:
         col1.error(f"Problem with ID card: {e}")
@@ -216,72 +206,73 @@ elif st.session_state.page == "game":
 
     # Main shop
     try:
-        shop = col2.container(border=True)
-        shop.header("🏪 Store")
-
-        # Open case
-        colopencase1, colopencase2 = shop.columns([2, 1], gap="small")
-        open_case = colopencase1.slider("**📦 ➡ 🚀 Buy shuttles**", value=int(
-            min(st.session_state.fleet_size - len(df), st.session_state.money / 10) / 2) if min(
-            st.session_state.fleet_size - len(df), st.session_state.money / 10) > 0 else 1,
-                                        step=1, min_value=0,
-                                        max_value=int(min(st.session_state.fleet_size - len(df),
-                                                      st.session_state.money / 10) if min(
-                                            st.session_state.fleet_size - len(df),
-                                            st.session_state.money / 10) >= 1 else 1),
-                                        disabled=True if st.session_state.money < 10 or len(
-                                            ship_data) >= st.session_state.fleet_size else False)
-
-        colopencase2.markdown("")
-        if colopencase2.button(f"Open {open_case} case(s) for {open_case * 10}$",
-                               disabled=True if st.session_state.money < 10 or len(
-                                   ship_data) >= st.session_state.fleet_size else False):
-            for i in range(0, open_case):
-                ship = roll(proba_letter=st.session_state.p_letter, proba_number=st.session_state.p_number)
-                sql.add_ship(st.session_state.username, ship, price=10, add_to="player")
-            st.toast("🚀 New shuttle(s) in your fleet!")
-            time.sleep(0.75) & st.rerun()
+        with col2.container(border=True):
+            shop.shop(st.session_state.username, df, value_list)
+        # shop.header("🏪 Store")
+        #
+        # # Open case
+        # colopencase1, colopencase2 = shop.columns([2, 1], gap="small")
+        # open_case = colopencase1.slider("**📦 ➡ 🚀 Buy shuttles**", value=int(
+        #     min(st.session_state.fleet_size - len(df), st.session_state.money / 10) / 2) if min(
+        #     st.session_state.fleet_size - len(df), st.session_state.money / 10) > 0 else 1,
+        #                                 step=1, min_value=0,
+        #                                 max_value=int(min(st.session_state.fleet_size - len(df),
+        #                                               st.session_state.money / 10) if min(
+        #                                     st.session_state.fleet_size - len(df),
+        #                                     st.session_state.money / 10) >= 1 else 1),
+        #                                 disabled=True if st.session_state.money < 10 or len(
+        #                                     ship_data) >= st.session_state.fleet_size else False)
+        #
+        # colopencase2.markdown("")
+        # if colopencase2.button(f"Open {open_case} case(s) for {open_case * 10}$",
+        #                        disabled=True if st.session_state.money < 10 or len(
+        #                            ship_data) >= st.session_state.fleet_size else False):
+        #     for i in range(0, open_case):
+        #         ship = roll(proba_letter=st.session_state.p_letter, proba_number=st.session_state.p_number)
+        #         sql.add_ship(st.session_state.username, ship, price=10, add_to="player")
+        #     st.toast("🚀 New shuttle(s) in your fleet!")
+        #     time.sleep(0.75) & st.rerun()
 
         # Sell ships
-        with shop.expander("**🚀 ➡ 💲 Sell shuttle**", expanded=True):
-            colsellship1, colsellship2 = st.columns([2, 1], gap="small")
+        # with shop.expander("**🚀 ➡ 💲 Sell shuttle**", expanded=True):
+        #     colsellship1, colsellship2 = st.columns([2, 1], gap="small")
+        #
+        #     if not df.empty:
+        #         sell = colsellship1.multiselect("Sell ship", df["Ship"].tolist(), label_visibility="collapsed",
+        #                                         placeholder="Select shuttles for sale")
+        #         price = sum(get_cost(ship) for ship in sell)
+        #
+        #         if colsellship2.button(f"Sell selection for {price}$"):
+        #             for ship in sell:
+        #                 sql.sell_ship(st.session_state.username, ship)
+        #
+        #             st.toast("The shuttles have been sold!")
+        #             time.sleep(0.75) & st.rerun()
+        #
+        #         st.markdown("Sell shuttles of the same value")
+        #         sorted_values = sorted(value_list, reverse=True)
+        #         num_columns = 3
+        #         columns = st.columns(num_columns)
+        #         for i, item in enumerate(sorted_values):
+        #             col = columns[i % num_columns]
+        #             elements_safe = item.replace('$', '💲')
+        #             with col:
+        #                 if st.button(
+        #                         f"{elements_safe} ({sum(get_cost(ship) for ship in json.loads(st.session_state.ship_list) if get_d_sym(get_cost(ship)) == item)}$)",
+        #                         key=f"value_{item}"):
+        #                     for ship in json.loads(st.session_state.ship_list):
+        #                         if get_d_sym(get_cost(ship)) == item:
+        #                             sql.sell_ship(st.session_state.username, ship)
+        #                     time.sleep(0.75) & st.rerun()
+        #     else:
+        #         st.warning("You don't have any shuttles to sell.")
 
-            if not df.empty:
-                sell = colsellship1.multiselect("Sell ship", df["Ship"].tolist(), label_visibility="collapsed",
-                                                placeholder="Select shuttles for sale")
-                price = sum(get_cost(ship) for ship in sell)
-
-                if colsellship2.button(f"Sell selection for {price}$"):
-                    for ship in sell:
-                        sql.sell_ship(st.session_state.username, ship)
-
-                    st.toast("The shuttles have been sold!")
-                    time.sleep(0.75) & st.rerun()
-
-                st.markdown("Sell shuttles of the same value")
-                sorted_values = sorted(value_list, reverse=True)
-                num_columns = 3
-                columns = st.columns(num_columns)
-                for i, item in enumerate(sorted_values):
-                    col = columns[i % num_columns]
-                    elements_safe = item.replace('$', '💲')
-                    with col:
-                        if st.button(
-                                f"{elements_safe} ({sum(get_cost(ship) for ship in json.loads(st.session_state.ship_list) if get_d_sym(get_cost(ship)) == item)}$)",
-                                key=f"value_{item}"):
-                            for ship in json.loads(st.session_state.ship_list):
-                                if get_d_sym(get_cost(ship)) == item:
-                                    sql.sell_ship(st.session_state.username, ship)
-                            time.sleep(0.75) & st.rerun()
-            else:
-                st.warning("You don't have any shuttles to sell.")
-
-        # Upgrade fleet size
-        if shop.button(
-                f"📈 🚀 Upgrade the size of the space fleet by 5 places for {upgrade_fleet(st.session_state.fleet_size)}$",
-                disabled=True if st.session_state.money < upgrade_fleet(st.session_state.fleet_size) else False):
-            sql.upgrade_fleet_size(st.session_state.username, upgrade_fleet(st.session_state.fleet_size))
-            time.sleep(0.75) & st.rerun()
+    #     # Upgrade fleet size
+    #     if shop.button(
+    #             f"📈 🚀 Upgrade the size of the space fleet by 5 places for {upgrade_fleet(st.session_state.fleet_size)}$",
+    #             disabled=True if st.session_state.money < upgrade_fleet(st.session_state.fleet_size) else False):
+    #         sql.upgrade_fleet_size(st.session_state.username, upgrade_fleet(st.session_state.fleet_size))
+    #         time.sleep(0.75) & st.rerun()
     except Exception as e:
         col2.error(f"Problem with Shop: {e}")
         logging.exception(f"Error: {e}")
@@ -291,22 +282,26 @@ elif st.session_state.page == "game":
         with col2.container(border=True):
             usernames = sql.get_user()
             default_user = st.session_state.username if st.session_state.username in sql.get_user() else usernames[0]
-            selected_username = st.selectbox('👨🏽‍🚀 See a Captain', usernames, placeholder="Choose a captain")
+            colcom1, colcom2 = st.columns([2, 1], gap="small")
+            selected_username = colcom1.selectbox('👨🏽‍🚀 See a Captain', usernames, placeholder="Choose a captain")
             if selected_username:
-                ID_card.ID_card(selected_username)
+                colcom2.markdown("")
+                colcom2.markdown("")
+                if colcom2.toggle(f"{selected_username} ID card"):
+                    ID_card.ID_card(selected_username)
 
-                colsm1, colsm2 = st.columns([2, 1], gap="small")
-                send_money = colsm1.slider("💸 Send money", step=1, min_value=0,
-                                           max_value=st.session_state.money if st.session_state.money > 0 else 1,
-                                           disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False)
+                    colsm1, colsm2 = st.columns([2, 1], gap="small")
+                    send_money = colsm1.slider("💸 Send money", step=1, min_value=0,
+                                               max_value=st.session_state.money if st.session_state.money > 0 else 1,
+                                               disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False)
 
-                colsm2.markdown("")
-                if colsm2.button(f"Send {send_money}$ to {selected_username}",
-                                 disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username or st.session_state.trade_token < 1 else False):
-                    sql.update_money(selected_username, send_money, context="receiver")
-                    sql.update_money(st.session_state.username, send_money, context="sender")
-                    st.toast(f"💸 {send_money}$ sends to {selected_username}")
-                    time.sleep(0.75) & st.rerun()
+                    colsm2.markdown("")
+                    if colsm2.button(f"Send {send_money}$ to {selected_username}",
+                                     disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username or st.session_state.trade_token < 1 else False):
+                        sql.update_money(selected_username, send_money, context="receiver")
+                        sql.update_money(st.session_state.username, send_money, context="sender")
+                        st.toast(f"💸 {send_money}$ sends to {selected_username}")
+                        time.sleep(0.75) & st.rerun()
     except Exception as e:
         col2.error(f"Problem with Community: {e}")
         logging.exception(f"Error: {e}")

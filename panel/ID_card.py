@@ -8,9 +8,9 @@ from starwalkers.func import get_d_sym, get_cost
 
 
 def display_stars(grade):
-    full_star = '⭐'  # Emoji pour étoile pleine
-    empty_star = '☆'  # Emoji pour étoile vide
-    max_stars = 5  # Nombre maximum d'étoiles à afficher
+    full_star = '⭐'
+    empty_star = '☆'
+    max_stars = 5
 
     stars = full_star * grade + empty_star * (max_stars - grade)
     return stars
@@ -18,29 +18,46 @@ def display_stars(grade):
 
 def ID_card(username, display="community_info"):
     user_info = sql.get_user(username)
+    money = user_info[2]
+    ship_list = user_info[3]
+    enemy_list = user_info[4]
+    fleet_size = user_info[5]
+    win = user_info[6]
+    loose = user_info[7]
+    ratio_WL = user_info[8]
+    money_win = user_info[9]
+    money_spent = user_info[10]
+    grade = user_info[11]
+    p_letter = user_info[12]
+    p_number = user_info[13]
+    trade_token = user_info[14]
+    battle_played = user_info[15]
+    
     if user_info:
-        st.header(f"🧑🏽‍🚀 Captain {user_info[0]}'s ID Card {display_stars(user_info[11])}")
+        st.header(f"🧑🏽‍🚀 Captain {username}'s ID Card {display_stars(grade)}")
 
         st.subheader("Resources")
         colres1, colres2, colres3, colres4 = st.columns(4, gap="small")
-        colres1.metric(f"💲 Money", f"{user_info[2]}$")
-        colres2.metric(f"💵 Money earned", f"{user_info[9]}$")
+        colres1.metric(f"💲 Money", f"{money}$")
+        colres2.metric(f"💵 Money earned", f"{money_win}$")
         colres3.metric(f"🏷️ Money spent", f"{user_info[10]}$")
-        colres4.metric(f"🪙 Trade token", f"{user_info[14]}")
-        colres4.progress(user_info[15])
-        colres4.write(user_info[15])
+        colres4.metric(f"🪙 Trade token", f"{trade_token}")
+        if display == "player_info":
+            colres4.progress(battle_played)
 
         st.subheader("Space Fleet")
-        with st.expander(f"🚀 Space fleet capacity: {user_info[5]} ships", expanded=True):
+        with st.expander(f"🚀 Space fleet capacity: {fleet_size} ships", expanded=True):
             ship_data = []
             value_list = []
-            if len(user_info[3]) > 2:
-                for ship in json.loads(user_info[3]):
-                    ship_data.append(
-                        {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'),
-                         "Sell": get_cost(ship)})
-                    if get_d_sym(get_cost(ship)) not in value_list and display == "player_info":
-                        value_list.append(get_d_sym(get_cost(ship)))
+            if len(ship_list) > 2:
+                for ship in json.loads(ship_list):
+                    ship_entry = {"Ship": ship,
+                                  "Value": get_d_sym(get_cost(ship)).replace('$', '💲')}
+                    if display == "player_info":
+                        ship_entry["Sell"] = get_cost(ship)
+                        if get_d_sym(get_cost(ship)) not in value_list:
+                            value_list.append(get_d_sym(get_cost(ship)))
+                    ship_data.append(ship_entry)
                 if ship_data:
                     df = pd.DataFrame(ship_data).sort_values(by="Sell" if display == "player_info" else "Value", ascending=False)
                     styled_df = df.style.set_table_styles(
@@ -55,8 +72,8 @@ def ID_card(username, display="community_info"):
 
         st.subheader("Battles")
         colbattle1, colbattle2, colbattle3 = st.columns(3, gap="small")
-        colbattle1.metric(f"🏆 Win", f"{user_info[6]}")
-        colbattle2.metric(f"💥 Loose", f"{user_info[7]}")
-        colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{user_info[8]}")
+        colbattle1.metric(f"🏆 Win", f"{win}")
+        colbattle2.metric(f"💥 Loose", f"{loose}")
+        colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{ratio_WL}")
 
         return df, value_list
