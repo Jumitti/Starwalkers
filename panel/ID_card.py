@@ -16,16 +16,19 @@ def display_stars(grade):
     return stars
 
 
-def ID_card(username):
+def ID_card(username, display="community_info"):
     user_info = sql.get_user(username)
     if user_info:
         st.header(f"🧑🏽‍🚀 Captain {user_info[0]}'s ID Card {display_stars(user_info[11])}")
 
         st.subheader("Resources")
-        colres1, colres2, colres3 = st.columns(3, gap="small")
+        colres1, colres2, colres3, colres4 = st.columns(4, gap="small")
         colres1.metric(f"💲 Money", f"{user_info[2]}$")
         colres2.metric(f"💵 Money earned", f"{user_info[9]}$")
         colres3.metric(f"🏷️ Money spent", f"{user_info[10]}$")
+        colres4.metric(f"🪙 Trade token", f"{user_info[14]}")
+        colres4.progress(user_info[15])
+        colres4.write(user_info[15])
 
         st.subheader("Space Fleet")
         with st.expander(f"🚀 Space fleet capacity: {user_info[5]} ships", expanded=True):
@@ -36,10 +39,10 @@ def ID_card(username):
                     ship_data.append(
                         {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲'),
                          "Sell": get_cost(ship)})
-                    if get_d_sym(get_cost(ship)) not in value_list:
+                    if get_d_sym(get_cost(ship)) not in value_list and display == "player_info":
                         value_list.append(get_d_sym(get_cost(ship)))
                 if ship_data:
-                    df = pd.DataFrame(ship_data).sort_values(by="Sell", ascending=False)
+                    df = pd.DataFrame(ship_data).sort_values(by="Sell" if display == "player_info" else "Value", ascending=False)
                     styled_df = df.style.set_table_styles(
                         [
                             {'selector': 'th', 'props': [('max-width', '150px')]},

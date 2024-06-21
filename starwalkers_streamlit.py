@@ -114,6 +114,8 @@ if st.session_state.page == "login":
                     st.session_state.grade = user[11]
                     st.session_state.p_letter = user[12]
                     st.session_state.p_number = user[13]
+                    st.session_state.trade_token = user[14]
+                    st.session_state.battle_played = user[15]
                     game() & st.rerun()
                 else:
                     col2.error("Username or password incorrect")
@@ -196,6 +198,8 @@ elif st.session_state.page == "game":
             st.session_state.grade = None
             st.session_state.p_letter = None
             st.session_state.p_number = None
+            st.session_state.trade_token = None
+            st.session_state.battle_played = None
             login() & st.rerun()
         except Exception as e:
             col2.error(f"Problem during sign out: {e}")
@@ -298,7 +302,7 @@ elif st.session_state.page == "game":
 
                 colsm2.markdown("")
                 if colsm2.button(f"Send {send_money}$ to {selected_username}",
-                                 disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username else False):
+                                 disabled=True if st.session_state.money < 1 or selected_username == st.session_state.username or st.session_state.trade_token < 1 else False):
                     sql.update_money(selected_username, send_money, context="receiver")
                     sql.update_money(st.session_state.username, send_money, context="sender")
                     st.toast(f"💸 {send_money}$ sends to {selected_username}")
@@ -360,6 +364,7 @@ elif st.session_state.page == "game":
                 if colselectfight2.button(f"FIGHT !"):
                     damage = random.randint(0, 30)
                     if value_player > value_enemies:
+                        sql.trade_token(st.session_state.username, len(styled_df_enemy['Ship']))
                         money_win = sum(get_cost(ship) for ship in styled_df_enemy['Ship']) // 1.5
                         sql.update_money(st.session_state.username, money_win if money_win != 0 else 1, context="win")
                         for ship in styled_df_enemy['Ship']:
@@ -379,6 +384,7 @@ elif st.session_state.page == "game":
                         time.sleep(2) & st.rerun()
 
                     if value_player <= value_enemies:
+                        sql.trade_token(st.session_state.username, len(shuttles_for_fight))
                         for ship in shuttles_for_fight:
                             sql.remove_ship(st.session_state.username, ship, "player", fight=True)
                         for ship in styled_df_enemy['Ship']:
