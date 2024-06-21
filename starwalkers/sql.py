@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+import decimal
 
 import bcrypt
 import streamlit as st
@@ -408,5 +409,37 @@ def trade_token(username, number_battle):
     user = get_user(username)
     st.session_state.trade_token = user[14]
     st.session_state.battle_played = user[15]
+
+    conn.close()
+
+
+# Grade
+def grade(username, amount, p_letter, p_number):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 6  # Vous pouvez ajuster la précision si nécessaire
+
+    # Convertir les valeurs actuelles de p_letter et p_number en decimal
+    p_letter = decimal.Decimal(p_letter)
+    p_number = decimal.Decimal(p_number)
+
+    # Calculer les nouvelles valeurs
+    new_p_letter = round(p_letter + decimal.Decimal('-0.1'), 1)
+    new_p_number = round(p_number + decimal.Decimal('0.0001'), 4)
+
+    # Mettre à jour la base de données avec les valeurs arrondies
+    c.execute("""
+        UPDATE users 
+        SET 
+            money = money - ?, 
+            money_spent = money_spent + ?, 
+            grade = grade + ?, 
+            p_letter = ?, 
+            p_number = ? 
+        WHERE username = ?
+    """, (amount, amount, 1, float(new_p_letter), float(new_p_number), username))
+
+    conn.commit()
 
     conn.close()

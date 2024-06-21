@@ -4,7 +4,7 @@ import time
 import streamlit as st
 
 from starwalkers import sql
-from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
+from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet, upgrade
 
 
 def shop(username, df, value_list):
@@ -77,9 +77,21 @@ def shop(username, df, value_list):
         else:
             st.warning("You don't have any shuttles to sell.")
 
-    # Upgrade fleet size
-    if st.button(
-            f"📈 🚀 Upgrade the size of the space fleet by 5 places for {upgrade_fleet(fleet_size)}$",
-            disabled=True if money < upgrade_fleet(fleet_size) else False):
-        sql.upgrade_fleet_size(username, upgrade_fleet(fleet_size))
-        time.sleep(0.75) & st.rerun()
+    # Skills and upgrade
+    with st.expander("✨ Skills and upgrade", expanded=True):
+        colsu1, colsu2, colsu3 = st.columns(3, gap="small")
+
+        colsu1.metric(f"⭐ Grade", grade, delta=1 if grade < 5 else "MAX")
+        if grade < 5:
+            if colsu1.button(
+                    f"⬆️ Upgrade\n\n{upgrade(grade)}$",
+                    disabled=True if money < upgrade(grade) and grade < 5 else False):
+                sql.grade(username, upgrade(grade), p_letter, p_number)
+                time.sleep(0.75) & st.rerun()
+
+        colsu2.metric(f"🚀 Fleet size", fleet_size, delta=5)
+        if colsu2.button(
+                f"⬆️ Upgrade\n\n{upgrade_fleet(fleet_size)}$",
+                disabled=True if money < upgrade_fleet(fleet_size) else False):
+            sql.upgrade_fleet_size(username, upgrade_fleet(fleet_size))
+            time.sleep(0.75) & st.rerun()

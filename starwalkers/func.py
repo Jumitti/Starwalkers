@@ -36,7 +36,7 @@ def got_let_int(letter):  # Letter value
 
 
 def roll(proba_letter=None, proba_number=None, number_min=None, number_max=None, letter_min=None, letter_max=None, number=None, letter=None):  # Generate, modify ships
-    letters = ["*", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+    letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
                'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
     if letter_min or letter_max:
@@ -52,7 +52,7 @@ def roll(proba_letter=None, proba_number=None, number_min=None, number_max=None,
         ship_let = letter
 
     else:
-        letters = ["*", 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+        letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
                    'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
         with open(f'probabilities/probabilities_letter_{proba_letter}.json', 'r') as f:
             probabilities = json.load(f)
@@ -99,4 +99,9 @@ def upgrade_fleet(fleet_size):
     slope = (y2 - y1) / (x2 - x1)
     y_fleet_size = y1 + (fleet_size - x1) * slope
     price = math.floor(100 * math.exp(5 * y_fleet_size))
+    return price
+
+
+def upgrade(grade):
+    price = math.floor(1000 * math.exp(0.35 * (grade + 1)))
     return price
