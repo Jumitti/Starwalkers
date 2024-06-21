@@ -414,7 +414,7 @@ def trade_token(username, number_battle):
 
 
 # Grade
-def grade(username, amount, p_letter, p_number):
+def upgrade_grade(username, amount, p_letter, p_number):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 

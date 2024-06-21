@@ -86,7 +86,7 @@ def shop(username, df, value_list):
             if colsu1.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade)}$",
                     disabled=True if money < upgrade(grade) and grade < 5 else False):
-                sql.grade(username, upgrade(grade), p_letter, p_number)
+                sql.upgrade_grade(username, upgrade(grade), p_letter, p_number)
                 time.sleep(0.75) & st.rerun()
 
         colsu2.metric(f"🚀 Fleet size", fleet_size, delta=5)
