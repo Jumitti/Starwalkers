@@ -11,9 +11,18 @@ def shop(username, df, value_list):
     user_info = sql.get_user(username)
     money = user_info[2]
     ship_list = user_info[3]
+    enemy_list = user_info[4]
     fleet_size = user_info[5]
+    win = user_info[6]
+    loose = user_info[7]
+    ratio_WL = user_info[8]
+    money_win = user_info[9]
+    money_spent = user_info[10]
+    grade = user_info[11]
     p_letter = user_info[12]
     p_number = user_info[13]
+    trade_token = user_info[14]
+    battle_played = user_info[15]
 
     st.header("🏪 Store")
 
