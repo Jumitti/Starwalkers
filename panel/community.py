@@ -1,16 +1,9 @@
-import json
-import random
-import sys
 import time
 
-import pandas as pd
 import streamlit as st
 
+from panel import ID_card
 from starwalkers import sql
-from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
-from panel import ID_card, shop
-
-import logging
 
 
 def community(username):
