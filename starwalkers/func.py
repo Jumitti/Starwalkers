@@ -87,7 +87,7 @@ def get_d_sym(a):  # Cost to dollar
 
 def get_cost(a):  # Get cost of a ship
     letter, number = a.split("-")
-    cost = (got_let_int(letter) * float(number)) // 1000
+    cost = (got_let_int(letter) * int(number)) // 1000
     return cost
 
 

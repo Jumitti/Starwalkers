@@ -46,7 +46,7 @@ def ID_card(username, display="community_info"):
     if user_info:
         st.header(f"🧑🏽‍🚀 Captain {username}'s ID Card {display_stars(grade)}")
 
-        st.subheader("Resources")
+        st.subheader("💲 Resources")
         colres1, colres2, colres3, colres4 = st.columns(4, gap="small")
         colres1.metric(f"💲 Money", f"{money}$")
         colres2.metric(f"💵 Money earned", f"{money_win}$")
@@ -55,8 +55,8 @@ def ID_card(username, display="community_info"):
         if display == "player_info":
             colres4.progress(battle_played)
 
-        st.subheader("Space Fleet")
-        with st.expander(f"🚀 Space fleet capacity: {fleet_size} ships", expanded=True):
+        st.subheader("🚀 Space Fleet")
+        with st.expander(f"Space fleet capacity: {fleet_size} ships", expanded=True):
             ship_data = []
             value_list = []
             if len(ship_list) > 2:
@@ -80,7 +80,13 @@ def ID_card(username, display="community_info"):
             else:
                 df = pd.DataFrame()
 
-        st.subheader("Battles")
+        st.subheader("⚔️ Battles")
+        colbattle1, colbattle2, colbattle3 = st.columns(3, gap="small")
+        colbattle1.metric(f"🏆 Win", f"{win}")
+        colbattle2.metric(f"💥 Loose", f"{loose}")
+        colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{ratio_WL}")
+
+        st.subheader("🏆 Skills and trophies")
         if display == "player_info":
             colsu1, colsu2, colsu3 = st.columns(3, gap="small")
             colsu1.metric(f"⭐ Galactic Commander", grade, delta="" if grade < 5 else "MAX")

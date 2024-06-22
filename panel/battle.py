@@ -80,22 +80,22 @@ def battle(username, df):
                                                              label_visibility="collapsed",
                                                              placeholder="Select shuttles to fight (max:4)",
                                                              max_selections=4, default=df["Ship"].tolist()[:4])
-            value_player = sum(get_cost(ship) for ship in shuttles_for_fight) * random.uniform(1, damage_bonus)
-            value_enemies = sum(get_cost(ship) for ship in styled_df_enemy["Ship"])
+            value_player = int(sum(get_cost(ship) for ship in shuttles_for_fight) * random.uniform(1, damage_bonus))
+            value_enemies = int(sum(get_cost(ship) for ship in styled_df_enemy["Ship"]))
             # colselectfight2.write(value_enemies)
             # colselectfight2.write(value_player)
             if colselectfight2.button(f"FIGHT !"):
                 damage = random.randint(0, 100)
                 if value_player > value_enemies:
                     sql.trade_token(username, len(styled_df_enemy['Ship']))
-                    money_win = (sum(get_cost(ship) for ship in styled_df_enemy['Ship']) // 1.5) * random.uniform(1, treasure_money_bonus)
+                    money_win = int((sum(get_cost(ship) for ship in styled_df_enemy['Ship']) // 1.5) * random.uniform(1, treasure_money_bonus))
                     sql.update_money(username, money_win if money_win != 0 else 1, context="win")
                     for ship in styled_df_enemy['Ship']:
                         sql.remove_ship(username, ship, "enemies")
                     st.session_state.pop('selected_ships_enemy', None)
                     for ship in shuttles_for_fight:
                         player_let, player_int = ship.split("-")
-                        new_number = int(player_int) - ((damage * random.uniform(1, resistance_bonus)) // len(shuttles_for_fight))
+                        new_number = int(player_int) - (int((damage * random.uniform(1, resistance_bonus))) // len(shuttles_for_fight))
                         if new_number >= 0:
                             update_ship = roll(letter=player_let, number=new_number)
                             sql.add_ship(username, update_ship, "player", fight=True)
@@ -112,7 +112,7 @@ def battle(username, df):
                         sql.remove_ship(username, ship, "player", fight=True)
                     for ship in styled_df_enemy['Ship']:
                         enemy_let, enemy_int = ship.split("-")
-                        new_number = int(enemy_int) - (damage // len(styled_df_enemy))
+                        new_number = int(enemy_int) - (int((damage / random.uniform(1, resistance_bonus))) // len(styled_df_enemy))
                         if new_number >= 0:
                             update_ship = roll(letter=enemy_let, number=new_number)
                             sql.add_ship(username, update_ship, "enemies", fight=True)
