@@ -148,7 +148,7 @@ def shop(username, df, value_list):
         #     sql.upgrade_treasure(username, upgrade(grade_treasure, 0.3, 1500), treasure_money_bonus, treasure_resource_bonus, treasure_artifact_bonus)
         #     time.sleep(0.75) & st.rerun()
 
-        colsu8.metric(f"🛒 Interstellar Commerce", grade_treasure, delta=1 if grade_treasure < 10 else "MAX")
+        colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta=1 if grade_treasure < 10 else "MAX")
         if colsu8.button(
                 f"⬆️ Upgrade\n\n{upgrade(grade_treasure, 0.3, 1500)}$",
                 disabled=True if money < upgrade(grade_treasure, 0.3, 1500) and grade_treasure < 10 else False,
