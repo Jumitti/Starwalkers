@@ -33,7 +33,17 @@ def init_db():
                  money_spent INTEGER,
                  grade INTEGER,
                  p_letter REAL,
-                 p_number REAL)''')
+                 p_number REAL,
+                 grade_damage INTEGER,
+                 damage_bonus REAL,
+                 grade_resistance INTEGER,
+                 resistance_bonus REAL,
+                 grade_agility INTEGER,
+                 agility_bonus REAL,
+                 grade_treasure INTEGER,
+                 treasure_money_bonus REAL,
+                 treasure_resource_bonus REAL,
+                 treasure_artifact_bonus REAL)''')
     
     # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
@@ -48,13 +58,46 @@ def init_db():
     #     c.execute('UPDATE users SET p_letter = 0.5 WHERE p_letter IS NULL')
     # if 'p_number' not in columns:
     #     c.execute('ALTER TABLE users ADD COLUMN p_number REAL DEFAULT -0.0004')
-    #     c.execute('UPDATE users SET p_number = -0.0004 WHERE p_number IS NULL')
-    if 'trade_token' not in columns:
-        c.execute('ALTER TABLE users ADD COLUMN trade_token INTEGER DEFAULT 0')
-        c.execute('UPDATE users SET trade_token = 0 WHERE trade_token IS NULL')
-    if 'battle_played' not in columns:
-        c.execute('ALTER TABLE users ADD COLUMN battle_played INTEGER DEFAULT 0')
-        c.execute('UPDATE users SET battle_played = 0 WHERE battle_played IS NULL')
+    # #     c.execute('UPDATE users SET p_number = -0.0004 WHERE p_number IS NULL')
+    # if 'trade_token' not in columns:
+    #     c.execute('ALTER TABLE users ADD COLUMN trade_token INTEGER DEFAULT 0')
+    #     c.execute('UPDATE users SET trade_token = 0 WHERE trade_token IS NULL')
+    # if 'battle_played' not in columns:
+    #     c.execute('ALTER TABLE users ADD COLUMN battle_played INTEGER DEFAULT 0')
+    #     c.execute('UPDATE users SET battle_played = 0 WHERE battle_played IS NULL')
+    if 'grade_damage' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade_damage INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade_damage = 0 WHERE grade_damage IS NULL')
+    if 'damage_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN damage_bonus REAL DEFAULT 1.00')
+        c.execute('UPDATE users SET damage_bonus = 1.00 WHERE damage_bonus IS NULL')
+
+    if 'grade_resistance' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade_resistance INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade_resistance = 0 WHERE grade_resistance IS NULL')
+    if 'resistance_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN resistance_bonus REAL DEFAULT 1.00')
+        c.execute('UPDATE users SET resistance_bonus = 1.00 WHERE resistance_bonus IS NULL')
+
+    if 'grade_agility' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade_agility INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade_agility = 0 WHERE grade_agility IS NULL')
+    if 'agility_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN agility_bonus REAL DEFAULT 0.10')
+        c.execute('UPDATE users SET agility_bonus = 0.10 WHERE agility_bonus IS NULL')
+
+    if 'grade_treasure' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade_treasure INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade_treasure = 0 WHERE grade_treasure IS NULL')
+    if 'treasure_money_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN treasure_money_bonus REAL DEFAULT 1.00')
+        c.execute('UPDATE users SET treasure_money_bonus = 1.00 WHERE treasure_money_bonus IS NULL')
+    if 'treasure_resource_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN treasure_resource_bonus REAL DEFAULT 1.00')
+        c.execute('UPDATE users SET treasure_resource_bonus = 1.00 WHERE treasure_resource_bonus IS NULL')
+    if 'treasure_artifact_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN treasure_artifact_bonus REAL DEFAULT 1.00')
+        c.execute('UPDATE users SET treasure_artifact_bonus = 1.00 WHERE treasure_artifact_bonus IS NULL')
 
     conn.commit()
     conn.close()
@@ -80,9 +123,19 @@ def add_user(username, password):
               "p_letter,"
               "p_number,"
               "trade_token,"
-              "battle_played)"
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              (username, hashed_password, 100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0.5, -0.0004, 0, 0))
+              "battle_played,"
+              "grade_damage,"
+              "damage_bonus,"
+              "grade_resistance,"
+              "resistance_bonus,"
+              "grade_agility,"
+              "agility_bonus,"
+              "grade_treasure,"
+              "treasure_money_bonus,"
+              "treasure_resource_bonus,"
+              "treasure_artifact_bonus)"
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+              (username, hashed_password, 100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0.5, -0.0004, 0, 0, 0, 1.00, 0, 1.00, 0, 0.10, 0, 1.00, 1.00, 1.00))
     conn.commit()
     conn.close()
 
@@ -182,26 +235,26 @@ def update_money(username, amount, context="win"):
     conn.close()
 
 
-# Fonction pour mettre à jour les informations de l'utilisateur
-def update_user(username, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number):
-    conn = sqlite3.connect('user/users.db')
-    c = conn.cursor()
-    c.execute("UPDATE users SET money=?,"
-              "ship_list=?,"
-              "enemy_list=?,"
-              "fleet_size=?,"
-              "win=?,"
-              "loose=?,"
-              "ratio_WL=?,"
-              "money_win=?,"
-              "money_spent=?,"
-              "grade=?,"
-              "p_letter=?,"
-              "p_number=? "
-              "WHERE username=?",
-              (money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number, username))
-    conn.commit()
-    conn.close()
+# # Fonction pour mettre à jour les informations de l'utilisateur
+# def update_user(username, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number):
+#     conn = sqlite3.connect('user/users.db')
+#     c = conn.cursor()
+#     c.execute("UPDATE users SET money=?,"
+#               "ship_list=?,"
+#               "enemy_list=?,"
+#               "fleet_size=?,"
+#               "win=?,"
+#               "loose=?,"
+#               "ratio_WL=?,"
+#               "money_win=?,"
+#               "money_spent=?,"
+#               "grade=?,"
+#               "p_letter=?,"
+#               "p_number=? "
+#               "WHERE username=?",
+#               (money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number, username))
+#     conn.commit()
+#     conn.close()
 
 
 def delete_user(username):
@@ -414,32 +467,93 @@ def trade_token(username, number_battle):
 
 
 # Grade
-def upgrade_grade(username, amount, p_letter, p_number):
+def upgrade_grade_commander(username, amount, p_letter, p_number):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    decimal.getcontext().prec = 6  # Vous pouvez ajuster la précision si nécessaire
-
-    # Convertir les valeurs actuelles de p_letter et p_number en decimal
+    decimal.getcontext().prec = 6
     p_letter = decimal.Decimal(p_letter)
     p_number = decimal.Decimal(p_number)
-
-    # Calculer les nouvelles valeurs
     new_p_letter = round(p_letter + decimal.Decimal('-0.1'), 1)
     new_p_number = round(p_number + decimal.Decimal('0.0001'), 4)
 
-    # Mettre à jour la base de données avec les valeurs arrondies
     c.execute("""
-        UPDATE users 
-        SET 
-            money = money - ?, 
-            money_spent = money_spent + ?, 
-            grade = grade + ?, 
-            p_letter = ?, 
-            p_number = ? 
-        WHERE username = ?
+        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade = grade + ?, p_letter = ?, 
+            p_number = ? WHERE username = ?
     """, (amount, amount, 1, float(new_p_letter), float(new_p_number), username))
 
     conn.commit()
+    conn.close()
 
+
+def upgrade_damage(username, amount, damage_bonus):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 4
+    damage_bonus = decimal.Decimal(damage_bonus)
+    new_damage_bonus = round(damage_bonus + decimal.Decimal('0.025'), 3)
+
+    c.execute("""
+        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade_damage = grade_damage + ?, damage_bonus = ? WHERE username = ?
+    """, (amount, amount, 1, float(new_damage_bonus), username))
+
+    conn.commit()
+    conn.close()
+
+
+def upgrade_resistance(username, amount, resistance_bonus):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 4
+    resistance_bonus = decimal.Decimal(resistance_bonus)
+    new_resistance_bonus = round(resistance_bonus + decimal.Decimal('0.025'), 3)
+
+    c.execute("""
+        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade_resistance = grade_resistance + ?, resistance_bonus = ? WHERE username = ?
+    """, (amount, amount, 1, float(new_resistance_bonus), username))
+
+    conn.commit()
+    conn.close()
+
+
+def upgrade_agility(username, amount, agility_bonus):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 4
+    agility_bonus = decimal.Decimal(agility_bonus)
+    new_agility_bonus = round(agility_bonus + decimal.Decimal('0.09'), 3)
+
+    c.execute("""
+        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade_agility = grade_agility + ?, agility_bonus = ? WHERE username = ?
+    """, (amount, amount, 1, float(new_agility_bonus), username))
+
+    conn.commit()
+    conn.close()
+
+
+def upgrade_treasure(username, amount, treasure_money_bonus, treasure_resource_bonus, treasure_artifact_bonus):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 4
+    treasure_money_bonus = decimal.Decimal(treasure_money_bonus)
+    new_treasure_money_bonus = round(treasure_money_bonus + decimal.Decimal('0.05'), 3)
+
+    decimal.getcontext().prec = 4
+    treasure_resource_bonus = decimal.Decimal(treasure_resource_bonus)
+    new_treasure_resource_bonus = round(treasure_resource_bonus + decimal.Decimal('0.025'), 3)
+
+    decimal.getcontext().prec = 4
+    treasure_artifact_bonus = decimal.Decimal(treasure_artifact_bonus)
+    new_treasure_artifact_bonus = round(treasure_artifact_bonus + decimal.Decimal('0.01'), 3)
+
+    c.execute("""
+        UPDATE users SET money = money - ?, money_spent = money_spent + ?,
+        grade_treasure = grade_treasure + ?, treasure_money_bonus = ?, treasure_resource_bonus = ?, treasure_artifact_bonus = ? WHERE username = ?
+    """, (amount, amount, 1, float(new_treasure_money_bonus), float(new_treasure_resource_bonus), float(new_treasure_artifact_bonus), username))
+
+    conn.commit()
     conn.close()

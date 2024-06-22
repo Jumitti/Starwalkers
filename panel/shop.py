@@ -23,6 +23,16 @@ def shop(username, df, value_list):
     p_number = user_info[13]
     trade_token = user_info[14]
     battle_played = user_info[15]
+    grade_damage = user_info[16]
+    damage_bonus = user_info[17]
+    grade_resistance = user_info[18]
+    resistance_bonus = user_info[19]
+    grade_agility = user_info[20]
+    agility_bonus = user_info[21]
+    grade_treasure = user_info[22]
+    treasure_money_bonus = user_info[23]
+    treasure_resource_bonus = user_info[24]
+    treasure_artifact_bonus = user_info[25]
 
     st.header("🏪 Store")
 
@@ -81,17 +91,75 @@ def shop(username, df, value_list):
     with st.expander("✨ Skills and upgrade", expanded=True):
         colsu1, colsu2, colsu3 = st.columns(3, gap="small")
 
-        colsu1.metric(f"⭐ Grade", grade, delta=1 if grade < 5 else "MAX")
+        colsu1.metric(f"⭐ Galactic Commander", grade, delta=1 if grade < 5 else "MAX")
         if grade < 5:
             if colsu1.button(
-                    f"⬆️ Upgrade\n\n{upgrade(grade)}$",
-                    disabled=True if money < upgrade(grade) and grade < 5 else False):
-                sql.upgrade_grade(username, upgrade(grade), p_letter, p_number)
+                    f"⬆️ Upgrade\n\n{upgrade(grade, 0.4, 1000)}$",
+                    disabled=True if money < upgrade(grade, 0.4, 1000) and grade < 5 else False, key="captain"):
+                sql.upgrade_grade_commander(username, upgrade(grade, 0.4, 1000), p_letter, p_number)
                 time.sleep(0.75) & st.rerun()
 
-        colsu2.metric(f"🚀 Fleet size", fleet_size, delta=5)
+        colsu2.metric(f"🚀 Armada Expansion", fleet_size, delta=5)
         if colsu2.button(
                 f"⬆️ Upgrade\n\n{upgrade_fleet(fleet_size)}$",
                 disabled=True if money < upgrade_fleet(fleet_size) else False):
             sql.upgrade_fleet_size(username, upgrade_fleet(fleet_size))
             time.sleep(0.75) & st.rerun()
+
+        colsu3.metric(f"🧭 Astral Navigator", "Soon")
+        # if colsu2.button(
+        #         f"⬆️ Upgrade\n\n{upgrade(fleet_size)}$",
+        #         disabled=True if money < upgrade(fleet_size) else False):
+        #     sql.upgrade_fleet_size(username, upgrade(fleet_size))
+        #     time.sleep(0.75) & st.rerun()
+
+        colsu4, colsu5, colsu6 = st.columns(3, gap="small")
+
+        colsu4.metric(f"💥 Stellar Strike", grade_damage, delta="+2.5%" if grade_damage < 10 else "MAX")
+        if grade_damage < 10:
+            if colsu4.button(
+                    f"⬆️ Upgrade\n\n{upgrade(grade_damage, 0.3, 1000)}$",
+                    disabled=True if money < upgrade(grade_damage, 0.3, 1000) and grade_damage < 10 else False, key="damage"):
+                sql.upgrade_damage(username, upgrade(grade_damage, 0.3, 1000), damage_bonus)
+                time.sleep(0.75) & st.rerun()
+
+        colsu5.metric(f"🛡️ Cosmic Fortitude", grade_resistance, delta="-2.5%" if grade_resistance < 10 else "MAX")
+        if grade_resistance < 10:
+            if colsu5.button(
+                    f"⬆️ Upgrade\n\n{upgrade(grade_resistance, 0.3, 1000)}$",
+                    disabled=True if money < upgrade(grade_resistance, 0.3, 1000) and grade_resistance < 10 else False, key="resistance"):
+                sql.upgrade_resistance(username, upgrade(grade_resistance, 0.3, 1000), resistance_bonus)
+                time.sleep(0.75) & st.rerun()
+
+        colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="+9%" if grade_agility < 10 else "MAX")
+        if colsu6.button(
+                f"⬆️ Upgrade\n\n{upgrade(grade_agility, 0.3, 250)}$",
+                disabled=True if money < upgrade(grade_agility, 0.3, 250) and grade_agility < 10 else False, key="agility"):
+            sql.upgrade_agility(username, upgrade(grade_agility, 0.3, 250), agility_bonus)
+            time.sleep(0.75) & st.rerun()
+
+        colsu7, colsu8, colsu9 = st.columns(3, gap="small")
+
+        colsu7.metric(f"🛒 Interstellar Commerce", "Soon", delta=1 if grade_treasure < 10 else "MAX")
+        # if colsu7.button(
+        #         f"⬆️ Upgrade\n\n{upgrade(grade_treasure, 0.3, 1500)}$",
+        #         disabled=True if money < upgrade(grade_treasure, 0.3, 1500) and grade_treasure < 10 else False,
+        #         key="treasure"):
+        #     sql.upgrade_treasure(username, upgrade(grade_treasure, 0.3, 1500), treasure_money_bonus, treasure_resource_bonus, treasure_artifact_bonus)
+        #     time.sleep(0.75) & st.rerun()
+
+        colsu8.metric(f"🛒 Interstellar Commerce", grade_treasure, delta=1 if grade_treasure < 10 else "MAX")
+        if colsu8.button(
+                f"⬆️ Upgrade\n\n{upgrade(grade_treasure, 0.3, 1500)}$",
+                disabled=True if money < upgrade(grade_treasure, 0.3, 1500) and grade_treasure < 10 else False,
+                key="treasure"):
+            sql.upgrade_treasure(username, upgrade(grade_treasure, 0.3, 1500), treasure_money_bonus,
+                                 treasure_resource_bonus, treasure_artifact_bonus)
+            time.sleep(0.75) & st.rerun()
+
+        colsu9.metric(f"⚡ Token Accelerator", "Soon", delta=5 if grade < 10 else "MAX")
+        # if colsu9.button(
+        #         f"⬆️ Upgrade\n\n{upgrade_fleet(fleet_size)}$",
+        #         disabled=True if money < upgrade_fleet(fleet_size) else False):
+        #     sql.upgrade_fleet_size(username, upgrade_fleet(fleet_size))
+        #     time.sleep(0.75) & st.rerun()

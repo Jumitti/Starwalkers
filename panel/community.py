@@ -22,6 +22,16 @@ def community(username):
     p_number = user_info[13]
     trade_token = user_info[14]
     battle_played = user_info[15]
+    grade_damage = user_info[16]
+    damage_bonus = user_info[17]
+    grade_resistance = user_info[18]
+    resistance_bonus = user_info[19]
+    grade_agility = user_info[20]
+    agility_bonus = user_info[21]
+    grade_treasure = user_info[22]
+    treasure_money_bonus = user_info[23]
+    treasure_resource_bonus = user_info[24]
+    treasure_artifact_bonus = user_info[25]
 
     st.header("👨🏼‍🚀 Community")
     usernames = sql.get_user()

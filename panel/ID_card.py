@@ -32,6 +32,16 @@ def ID_card(username, display="community_info"):
     p_number = user_info[13]
     trade_token = user_info[14]
     battle_played = user_info[15]
+    grade_damage = user_info[16]
+    damage_bonus = user_info[17]
+    grade_resistance = user_info[18]
+    resistance_bonus = user_info[19]
+    grade_agility = user_info[20]
+    agility_bonus = user_info[21]
+    grade_treasure = user_info[22]
+    treasure_money_bonus = user_info[23]
+    treasure_resource_bonus = user_info[24]
+    treasure_artifact_bonus = user_info[25]
     
     if user_info:
         st.header(f"🧑🏽‍🚀 Captain {username}'s ID Card {display_stars(grade)}")
@@ -71,9 +81,20 @@ def ID_card(username, display="community_info"):
                 df = pd.DataFrame()
 
         st.subheader("Battles")
-        colbattle1, colbattle2, colbattle3 = st.columns(3, gap="small")
-        colbattle1.metric(f"🏆 Win", f"{win}")
-        colbattle2.metric(f"💥 Loose", f"{loose}")
-        colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{ratio_WL}")
+        if display == "player_info":
+            colsu1, colsu2, colsu3 = st.columns(3, gap="small")
+            colsu1.metric(f"⭐ Galactic Commander", grade, delta="" if grade < 5 else "MAX")
+            colsu2.metric(f"🚀 Armada Expansion", fleet_size)
+            colsu3.metric(f"🧭 Astral Navigator", "Soon")
+
+            colsu4, colsu5, colsu6 = st.columns(3, gap="small")
+            colsu4.metric(f"💥 Stellar Strike", grade_damage, delta="" if grade < 10 else "MAX")
+            colsu5.metric(f"🛡️ Cosmic Fortitude", grade_resistance, delta="" if grade < 10 else "MAX")
+            colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="" if grade < 10 else "MAX")
+
+            colsu7, colsu8, colsu9 = st.columns(3, gap="small")
+            colsu7.metric(f"🛒 Interstellar Commerce", "Soon", delta="" if grade < 10 else "MAX")
+            colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta="" if grade < 10 else "MAX")
+            colsu9.metric(f"⚡ Token Accelerator", "Soon", delta="" if grade < 10 else "MAX")
 
         return df, value_list

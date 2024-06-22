@@ -112,6 +112,16 @@ if st.session_state.page == "login":
                     st.session_state.p_number = user[13]
                     st.session_state.trade_token = user[14]
                     st.session_state.battle_played = user[15]
+                    st.session_state.grade_damage = user[16]
+                    st.session_state.damage_bonus = user[17]
+                    st.session_state.grade_resistance = user[18]
+                    st.session_state.resistance_bonus = user[19]
+                    st.session_state.grade_agility = user[20]
+                    st.session_state.agility_bonus = user[21]
+                    st.session_state.grade_treasure = user[22]
+                    st.session_state.treasure_money_bonus = user[23]
+                    st.session_state.treasure_resource_bonus = user[24]
+                    st.session_state.treasure_artifact_bonus = user[25]
                     game() & st.rerun()
                 else:
                     col2.error("Username or password incorrect")

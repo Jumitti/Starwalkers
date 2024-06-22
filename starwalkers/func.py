@@ -87,7 +87,7 @@ def get_d_sym(a):  # Cost to dollar
 
 def get_cost(a):  # Get cost of a ship
     letter, number = a.split("-")
-    cost = (got_let_int(letter) * int(number)) // 1000
+    cost = (got_let_int(letter) * float(number)) // 1000
     return cost
 
 
@@ -102,6 +102,6 @@ def upgrade_fleet(fleet_size):
     return price
 
 
-def upgrade(grade):
-    price = math.floor(1000 * math.exp(0.35 * (grade + 1)))
+def upgrade(grade, coefficient, multiplier):
+    price = math.floor(multiplier * math.exp(coefficient * (grade + 1)))
     return price
