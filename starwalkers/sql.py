@@ -19,7 +19,7 @@ def init_db():
     c = conn.cursor()
 
     # Crée une table temporaire sans la colonne 'money'
-    c.execute('''CREATE TABLE IF NOT EXISTS users_temp
+    c.execute('''CREATE TABLE IF NOT EXISTS users
                  (username TEXT PRIMARY KEY,
                  password_hash TEXT,
                  money INTEGER,
@@ -34,6 +34,8 @@ def init_db():
                  grade INTEGER,
                  p_letter REAL,
                  p_number REAL,
+                 trade_token INTEGER,
+                 battle_played INTEGER,
                  grade_damage INTEGER,
                  damage_bonus REAL,
                  grade_resistance INTEGER,
@@ -59,12 +61,12 @@ def init_db():
     # if 'p_number' not in columns:
     #     c.execute('ALTER TABLE users ADD COLUMN p_number REAL DEFAULT -0.0004')
     # #     c.execute('UPDATE users SET p_number = -0.0004 WHERE p_number IS NULL')
-    # if 'trade_token' not in columns:
-    #     c.execute('ALTER TABLE users ADD COLUMN trade_token INTEGER DEFAULT 0')
-    #     c.execute('UPDATE users SET trade_token = 0 WHERE trade_token IS NULL')
-    # if 'battle_played' not in columns:
-    #     c.execute('ALTER TABLE users ADD COLUMN battle_played INTEGER DEFAULT 0')
-    #     c.execute('UPDATE users SET battle_played = 0 WHERE battle_played IS NULL')
+    if 'trade_token' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN trade_token INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET trade_token = 0 WHERE trade_token IS NULL')
+    if 'battle_played' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN battle_played INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET battle_played = 0 WHERE battle_played IS NULL')
     if 'grade_damage' not in columns:
         c.execute('ALTER TABLE users ADD COLUMN grade_damage INTEGER DEFAULT 0')
         c.execute('UPDATE users SET grade_damage = 0 WHERE grade_damage IS NULL')
