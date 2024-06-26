@@ -2,6 +2,7 @@ import json
 import random
 import sys
 import time
+import base64
 
 import pandas as pd
 import streamlit as st
@@ -31,6 +32,14 @@ def register():
 
 def game():
     st.session_state.page = "game"
+
+
+# Charger le fichier audio
+audio_file = open('sounds/space-adventure-29296.mp3', 'rb')
+audio_bytes = audio_file.read()
+
+# Convertir le fichier audio en base64 pour l'intégration HTML
+audio_b64 = base64.b64encode(audio_bytes).decode()
 
 
 # Database initialization
@@ -81,6 +90,53 @@ with st.sidebar.expander("Info and help", expanded=True):
 # Login page
 if st.session_state.page == "login":
     try:
+        st.markdown(f"""
+            <audio id="audio" autoplay loop>
+                <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
+            </audio>
+            <script>
+                var audio = document.getElementById('audio');
+                audio.volume = 0.0;
+                var fadeInDuration = 5000;
+                var fadeOutDuration = 5000;
+
+                // Fade in
+                var fadeAudio = setInterval(function () {{
+                    if (audio.volume < 1.0) {{
+                        audio.volume += 0.01;
+                    }} else {{
+                        clearInterval(fadeAudio);
+                    }}
+                }}, fadeInDuration / 50);
+
+                // Fade out
+                audio.addEventListener('ended', function () {{
+                    var fadeOutAudio = setInterval(function () {{
+                        if (audio.volume > 0.0) {{
+                            audio.volume -= 0.01;
+                        }} else {{
+                            clearInterval(fadeOutAudio);
+                        }}
+                    }}, fadeOutDuration / 100);
+                }});
+
+                // Repeat the fade out event listener every loop
+                audio.addEventListener('timeupdate', function() {{
+                    if (audio.currentTime > audio.duration - fadeOutDuration / 1000) {{
+                        var fadeOutAudio = setInterval(function () {{
+                            if (audio.volume > 0.0) {{
+                                audio.volume -= 0.01;
+                            }} else {{
+                                clearInterval(fadeOutAudio);
+                            }}
+                        }}, fadeOutDuration / 100);
+                    }}
+                }});
+            </script>
+            """,
+                    unsafe_allow_html=True
+                    )
+
         col2.title("Login")
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
