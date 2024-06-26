@@ -99,7 +99,7 @@ def battle(username, df):
                     money_win = int((sum(get_cost(ship) for ship in styled_df_enemy['Ship']) // 1.5) * random.uniform(1, treasure_money_bonus))
                     sql.update_money(username, money_win if money_win != 0 else 1, context="win")
                     for ship in styled_df_enemy['Ship']:
-                        sql.remove_ship(username, ship, "enemies")
+                        sql.remove_ship(username, ship, "enemies", fight=True)
                     st.session_state.pop('selected_ships_enemy', None)
                     for ship in shuttles_for_fight:
                         player_let, player_int = ship.split("-")
@@ -135,7 +135,7 @@ def battle(username, df):
             if colwar2.button("🏃‍♂️Leave fight"):
                 if random.random() <= agility_bonus:
                     for ship in json.loads(enemy_list):
-                        sql.remove_ship(username, ship, "enemies")
+                        sql.remove_ship(username, ship, "enemies", fight=False)
                     st.session_state.pop('selected_ships_enemy', None)
                     st.toast("🏃‍♂️You left the battle")
                     time.sleep(0.25) & st.rerun()

@@ -447,13 +447,19 @@ def remove_ship(username, ship, remove_from, fight=False):
         # Convertir la liste mise à jour en JSON pour la sauvegarde dans la base de données
         updated_enemy_list_json = json.dumps(current_enemy_list)
 
-        # Mettre à jour la base de données avec la nouvelle liste de navettes
-        c.execute(""
-                  "UPDATE users SET enemy_list=?,"
-                  "win = win + ?,"
-                  "ratio_WL = CASE WHEN loose > 0.00 THEN (win + ?) / loose ELSE win + ? END "
-                  "WHERE username=?",
-                  (updated_enemy_list_json, 1, 1.00, 1.00, username))
+        if fight is True:
+            # Mettre à jour la base de données avec la nouvelle liste de navettes
+            c.execute(""
+                      "UPDATE users SET enemy_list=?,"
+                      "win = win + ?,"
+                      "ratio_WL = CASE WHEN loose > 0.00 THEN (win + ?) / loose ELSE win + ? END "
+                      "WHERE username=?",
+                      (updated_enemy_list_json, 1, 1.00, 1.00, username))
+
+        elif fight is False:
+            c.execute(""
+                      "UPDATE users SET enemy_list=? WHERE username=?",
+                      (updated_enemy_list_json, username))
         conn.commit()
 
     conn.close()
