@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import streamlit as st
 
-from starwalkers import sql
+from starwalkers import sql, sound_effects
 from starwalkers.func import roll, get_d_sym, get_cost
 
 
@@ -56,6 +56,7 @@ def battle(username, df):
             enemy_data.append(
                 {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲')})
         if enemy_data:
+            sound_effects.battle()
             df_enemy = pd.DataFrame(enemy_data).sort_values(by="Value", ascending=False)
             styled_df_enemy = df_enemy.style.set_table_styles(
                 [

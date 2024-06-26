@@ -7,7 +7,7 @@ import base64
 import pandas as pd
 import streamlit as st
 
-from starwalkers import sql
+from starwalkers import sql,sound_effects
 from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
 from panel import ID_card, shop, community, battle
 
@@ -34,14 +34,6 @@ def game():
     st.session_state.page = "game"
 
 
-# Charger le fichier audio
-audio_file = open('sounds/space-adventure-29296.mp3', 'rb')
-audio_bytes = audio_file.read()
-
-# Convertir le fichier audio en base64 pour l'intégration HTML
-audio_b64 = base64.b64encode(audio_bytes).decode()
-
-
 # Database initialization
 sql.init_db()
 
@@ -56,7 +48,7 @@ st.logo("img/starwalkers_v1.png")
 st.sidebar.image("img/starwalkers_v1.png")
 st.sidebar.header("Welcome to StarWalkers")
 st.sidebar.divider()
-with st.sidebar.expander("Info and help", expanded=True):
+with st.sidebar.expander("Info and help", expanded=False):
     st.markdown("""
     **Starwalkers** is a seemingly simple game where mistakes can cost you dearly. Start your adventure with **100$** and buy your first ships. It's time to fight! Can you be the winner?
 
@@ -86,57 +78,13 @@ with st.sidebar.expander("Info and help", expanded=True):
       - Game by Gametoy20: [https://github.com/Gametoy20](https://github.com/Gametoy20)
       - Streamlit app and maintain by Jumitti: [https://github.com/Jumitti](https://github.com/Jumitti)
     """)
+audio = st.sidebar.toggle("Audio")
 
 # Login page
 if st.session_state.page == "login":
     try:
-        st.markdown(f"""
-            <audio id="audio" autoplay loop>
-                <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
-            </audio>
-            <script>
-                var audio = document.getElementById('audio');
-                audio.volume = 0.0;
-                var fadeInDuration = 5000;
-                var fadeOutDuration = 5000;
-
-                // Fade in
-                var fadeAudio = setInterval(function () {{
-                    if (audio.volume < 1.0) {{
-                        audio.volume += 0.01;
-                    }} else {{
-                        clearInterval(fadeAudio);
-                    }}
-                }}, fadeInDuration / 50);
-
-                // Fade out
-                audio.addEventListener('ended', function () {{
-                    var fadeOutAudio = setInterval(function () {{
-                        if (audio.volume > 0.0) {{
-                            audio.volume -= 0.01;
-                        }} else {{
-                            clearInterval(fadeOutAudio);
-                        }}
-                    }}, fadeOutDuration / 100);
-                }});
-
-                // Repeat the fade out event listener every loop
-                audio.addEventListener('timeupdate', function() {{
-                    if (audio.currentTime > audio.duration - fadeOutDuration / 1000) {{
-                        var fadeOutAudio = setInterval(function () {{
-                            if (audio.volume > 0.0) {{
-                                audio.volume -= 0.01;
-                            }} else {{
-                                clearInterval(fadeOutAudio);
-                            }}
-                        }}, fadeOutDuration / 100);
-                    }}
-                }});
-            </script>
-            """,
-                    unsafe_allow_html=True
-                    )
-
+        if audio:
+            sound_effects.connexion_page()
         col2.title("Login")
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
@@ -183,7 +131,7 @@ if st.session_state.page == "login":
                 col2.warning("Please complete all fields")
     except Exception as e:
         col2.error(f"Problem with login: {e}")
-        logging.erro(f"Error: {e}")
+        logging.exception(f"Error: {e}")
 
     if col2.button("Create an account", on_click=register):
         st.rerun()
@@ -191,6 +139,8 @@ if st.session_state.page == "login":
 # Register page
 elif st.session_state.page == "register":
     try:
+        if audio:
+            sound_effects.connexion_page()
         col2.title("Register")
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
@@ -213,6 +163,8 @@ elif st.session_state.page == "register":
 
 # Game page
 elif st.session_state.page == "game":
+    if audio:
+        sound_effects.main_game()
     # Sidebar
     st.sidebar.divider()
 
