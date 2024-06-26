@@ -644,3 +644,24 @@ def upgrade_commerce(username, amount, commerce_bonus):
 
     conn.commit()
     conn.close()
+
+
+def upgrade_navigation(username, amount, navigation_price_bonus, navigation_time_bonus):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 4
+    navigation_price_bonus = decimal.Decimal(navigation_price_bonus)
+    new_navigation_price_bonus = round(navigation_price_bonus + decimal.Decimal('-0.025'), 3)
+
+    c.execute("""
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?,
+        grade_navigation = grade_navigation + ?,
+        navigation_price_bonus = ?,
+        navigation_time_bonus
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_navigation_price_bonus), 2, username))
+
+    conn.commit()
+    conn.close()
