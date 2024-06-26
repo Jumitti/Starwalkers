@@ -42,7 +42,7 @@ def output_audio(audio_files):
                     </audio>
                     <script>
                         var audio = document.getElementById('audio');
-                        audio.volume = 1.0;
+                        audio.volume = 0.25;
                         document.addEventListener('DOMContentLoaded', function() {{
                             audio.play().catch(function(error) {{
                                 console.log('Playback prevented: ' + error);

@@ -78,14 +78,14 @@ with st.sidebar.expander("Info and help", expanded=False):
       - Game by Gametoy20: [https://github.com/Gametoy20](https://github.com/Gametoy20)
       - Streamlit app and maintain by Jumitti: [https://github.com/Jumitti](https://github.com/Jumitti)
     """)
-audio = st.sidebar.toggle("Audio")
+audio = st.sidebar.toggle("Audio", value=False)
 
 # Login page
 if st.session_state.page == "login":
     try:
+        col2.title("Login")
         if audio:
             sound_effects.connexion_page()
-        col2.title("Login")
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
         if col2.button("Login"):
@@ -138,10 +138,11 @@ if st.session_state.page == "login":
 
 # Register page
 elif st.session_state.page == "register":
+
     try:
+        col2.title("Register")
         if audio:
             sound_effects.connexion_page()
-        col2.title("Register")
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
         if col2.button("Register"):
