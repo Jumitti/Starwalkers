@@ -35,6 +35,13 @@ def battle(username, df):
     treasure_money_bonus = user_info[23]
     treasure_resource_bonus = user_info[24]
     treasure_artifact_bonus = user_info[25]
+    grade_commerce = user_info[26]
+    commerce_bonus = user_info[27]
+    grade_navigation = user_info[28]
+    navigation_price_bonus = user_info[29]
+    navigation_time_bonus = user_info[30]
+    grade_token = user_info[31]
+    token_bonus = user_info[32]
 
     st.header("⚔️ Space war")
     colwar1, colwar2 = st.columns(2, gap="small")

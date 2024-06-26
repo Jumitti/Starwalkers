@@ -42,6 +42,13 @@ def ID_card(username, display="community_info"):
     treasure_money_bonus = user_info[23]
     treasure_resource_bonus = user_info[24]
     treasure_artifact_bonus = user_info[25]
+    grade_commerce = user_info[26]
+    commerce_bonus = user_info[27]
+    grade_navigation = user_info[28]
+    navigation_price_bonus = user_info[29]
+    navigation_time_bonus = user_info[30]
+    grade_token = user_info[31]
+    token_bonus = user_info[32]
     
     if user_info:
         st.header(f"🧑🏽‍🚀 Captain {username}'s ID Card {display_stars(grade)}")
@@ -91,7 +98,7 @@ def ID_card(username, display="community_info"):
             colsu1, colsu2, colsu3 = st.columns(3, gap="small")
             colsu1.metric(f"⭐ Galactic Commander", grade, delta="" if grade < 5 else "MAX")
             colsu2.metric(f"🚀 Armada Expansion", fleet_size)
-            colsu3.metric(f"🧭 Astral Navigator", "Soon")
+            colsu3.metric(f"🧭 Astral Navigator", grade_navigation, delta="" if grade < 10 else "MAX")
 
             colsu4, colsu5, colsu6 = st.columns(3, gap="small")
             colsu4.metric(f"💥 Stellar Strike", grade_damage, delta="" if grade < 10 else "MAX")
@@ -99,8 +106,8 @@ def ID_card(username, display="community_info"):
             colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="" if grade < 10 else "MAX")
 
             colsu7, colsu8, colsu9 = st.columns(3, gap="small")
-            colsu7.metric(f"🛒 Interstellar Commerce", "Soon", delta="" if grade < 10 else "MAX")
+            colsu7.metric(f"🛒 Interstellar Commerce", grade_commerce, delta="" if grade < 10 else "MAX")
             colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta="" if grade < 10 else "MAX")
-            colsu9.metric(f"⚡ Token Accelerator", "Soon", delta="" if grade < 10 else "MAX")
+            colsu9.metric(f"⚡ Token Accelerator", grade_token, delta="" if grade < 10 else "MAX")
 
         return df, value_list

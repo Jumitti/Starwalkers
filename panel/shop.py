@@ -33,6 +33,13 @@ def shop(username, df, value_list):
     treasure_money_bonus = user_info[23]
     treasure_resource_bonus = user_info[24]
     treasure_artifact_bonus = user_info[25]
+    grade_commerce = user_info[26]
+    commerce_bonus = user_info[27]
+    grade_navigation = user_info[28]
+    navigation_price_bonus = user_info[29]
+    navigation_time_bonus = user_info[30]
+    grade_token = user_info[31]
+    token_bonus = user_info[32]
 
     st.header("🏪 Store")
 
@@ -40,13 +47,13 @@ def shop(username, df, value_list):
     colopencase1, colopencase2 = st.columns([2, 1], gap="small")
     open_case = colopencase1.slider(
         "**📦 ➡ 🚀 Buy shuttles**",
-        value=int(min(fleet_size - len(df), money / 10) / 2) if min(fleet_size - len(df), money / 10) > 0 else 1, step=1,
-        min_value=0, max_value=int(min(fleet_size - len(df), money / 10) if min(fleet_size - len(df), money / 10) >= 1 else 1),
-        disabled=True if money < 10 or len(df) >= fleet_size else False)
+        value=int(min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) / 2) if min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) > 0 else 1, step=1,
+        min_value=0, max_value=int(min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) if min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) >= 1 else 1),
+        disabled=True if money < ((10 + 50 * grade) * commerce_bonus) or len(df) >= fleet_size else False)
 
     colopencase2.markdown("")
-    if colopencase2.button(f"Open {open_case} case(s) for {open_case * 10}$",
-                           disabled=True if money < 10 or len(df) >= fleet_size else False):
+    if colopencase2.button(f"Open {open_case} case(s) for {open_case * ((10 + 50 * grade) * commerce_bonus)}$",
+                           disabled=True if money < ((10 + 50 * grade) * commerce_bonus) or len(df) >= fleet_size else False):
         for i in range(0, open_case):
             ship = roll(proba_letter=p_letter, proba_number=p_number)
             sql.add_ship(username, ship, price=10, add_to="player")
@@ -140,13 +147,13 @@ def shop(username, df, value_list):
 
         colsu7, colsu8, colsu9 = st.columns(3, gap="small")
 
-        colsu7.metric(f"🛒 Interstellar Commerce", "Soon", delta=1 if grade_treasure < 10 else "MAX")
-        # if colsu7.button(
-        #         f"⬆️ Upgrade\n\n{upgrade(grade_treasure, 0.3, 1500)}$",
-        #         disabled=True if money < upgrade(grade_treasure, 0.3, 1500) and grade_treasure < 10 else False,
-        #         key="treasure"):
-        #     sql.upgrade_treasure(username, upgrade(grade_treasure, 0.3, 1500), treasure_money_bonus, treasure_resource_bonus, treasure_artifact_bonus)
-        #     time.sleep(0.75) & st.rerun()
+        colsu7.metric(f"🛒 Interstellar Commerce", "Soon", delta=1 if grade_commerce < 10 else "MAX")
+        if colsu7.button(
+                f"⬆️ Upgrade\n\n{upgrade(grade_commerce, 0.4, 500)}$",
+                disabled=True if money < upgrade(grade_commerce, 0.4, 500) and grade_commerce < 10 else False,
+                key="commerce"):
+            sql.upgrade_commerce(username, upgrade(grade_commerce, 0.4, 500), commerce_bonus)
+            time.sleep(0.75) & st.rerun()
 
         colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta=1 if grade_treasure < 10 else "MAX")
         if colsu8.button(

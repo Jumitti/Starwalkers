@@ -45,22 +45,19 @@ def init_db():
                  grade_treasure INTEGER,
                  treasure_money_bonus REAL,
                  treasure_resource_bonus REAL,
-                 treasure_artifact_bonus REAL)''')
-    
+                 treasure_artifact_bonus REAL,
+                 grade_commerce INTEGER,
+                 commerce_bonus REAL,
+                 grade_navigation INTEGER,
+                 navigation_price_bonus REAL,
+                 navigation_time_bonus INTEGER,
+                 grade_token INTEGER,
+                 token_bonus REAL)''')
+
     # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
     columns = [column[1] for column in c.fetchall()]
 
-    # if 'case_purchased' in columns:
-    #     c.execute('ALTER TABLE users DROP COLUMN case_purchased')
-    # if 'case_open' in columns:
-    #     c.execute('ALTER TABLE users DROP COLUMN case_open')
-    # if 'p_letter' not in columns:
-    #     c.execute('ALTER TABLE users ADD COLUMN p_letter REAL DEFAULT 0.5')
-    #     c.execute('UPDATE users SET p_letter = 0.5 WHERE p_letter IS NULL')
-    # if 'p_number' not in columns:
-    #     c.execute('ALTER TABLE users ADD COLUMN p_number REAL DEFAULT -0.0004')
-    # #     c.execute('UPDATE users SET p_number = -0.0004 WHERE p_number IS NULL')
     if 'trade_token' not in columns:
         c.execute('ALTER TABLE users ADD COLUMN trade_token INTEGER DEFAULT 0')
         c.execute('UPDATE users SET trade_token = 0 WHERE trade_token IS NULL')
@@ -101,6 +98,30 @@ def init_db():
         c.execute('ALTER TABLE users ADD COLUMN treasure_artifact_bonus REAL DEFAULT 1.00')
         c.execute('UPDATE users SET treasure_artifact_bonus = 1.00 WHERE treasure_artifact_bonus IS NULL')
 
+    if 'grade_commerce' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade_commerce INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade_commerce = 0 WHERE grade_commerce IS NULL')
+    if 'commerce_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN commerce_bonus REAL DEFAULT 1.00')
+        c.execute('UPDATE users SET commerce_bonus = 1.00 WHERE commerce_bonus IS NULL')
+
+    if 'grade_navigation' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade_navigation INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade_navigation = 0 WHERE grade_navigation IS NULL')
+    if 'navigation_price_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN navigation_price_bonus REAL DEFAULT 0.00')
+        c.execute('UPDATE users SET navigation_price_bonus = 0.00 WHERE navigation_price_bonus IS NULL')
+    if 'navigation_time_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN navigation_time_bonus INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET navigation_time_bonus = 0 WHERE navigation_time_bonus IS NULL')
+
+    if 'grade_token' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN grade_token INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET grade_token = 0 WHERE grade_token IS NULL')
+    if 'token_bonus' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN token_bonus REAL DEFAULT 0.00')
+        c.execute('UPDATE users SET token_bonus = 0.00 WHERE token_bonus IS NULL')
+
     conn.commit()
     conn.close()
 
@@ -135,9 +156,24 @@ def add_user(username, password):
               "grade_treasure,"
               "treasure_money_bonus,"
               "treasure_resource_bonus,"
-              "treasure_artifact_bonus)"
-              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              (username, hashed_password, 100, '', '', 10, 0, 0, 0.00, 0, 0, 0, 0.5, -0.0004, 0, 0, 0, 1.00, 0, 1.00, 0, 0.10, 0, 1.00, 1.00, 1.00))
+              "treasure_artifact_bonus,"
+              "grade_commerce,"
+              "commerce_bonus,"
+              "grade_navigation,"
+              "navigation_price_bonus,"
+              "navigation_time_bonus,"
+              "grade_token,"
+              "token_bonus)"
+              "VALUES ("
+              "?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
+              "?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
+              "?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
+              "?, ?, ?)",
+              (
+                  username, hashed_password, 100, '', '', 10, 0, 0, 0.00, 0,
+                  0, 0, 0.5, -0.0004, 0, 0, 0, 1.00, 0, 1.00,
+                  0, 0.10, 0, 1.00, 1.00, 1.00, 0, 1.00, 0, 1.00,
+                  0, 0, 0.00))
     conn.commit()
     conn.close()
 
@@ -192,7 +228,7 @@ def check_password(username, password):
     result = c.fetchone()
     conn.close()
     if result:
-        stored_hash = result[0]  # Récupérer le hash du mot de passe depuis le résultat
+        stored_hash = result[0]
         return checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
     else:
         return False
@@ -218,10 +254,18 @@ def update_money(username, amount, context="win"):
     c = conn.cursor()
 
     if context == 'sender':
-        c.execute("UPDATE users SET money=money - ?, money_spent=money_spent + ? WHERE username=?", (amount, amount, username))
+        c.execute(""
+                  "UPDATE users SET money=money - ?,"
+                  "money_spent=money_spent + ? "
+                  "WHERE username=?",
+                  (amount, amount, username))
 
     elif context == "receiver" or context == "win":
-        c.execute("UPDATE users SET money=money + ?, money_win=money_win + ? WHERE username=?", (amount, amount, username))
+        c.execute(""
+                  "UPDATE users SET money=money + ?,"
+                  "money_win=money_win + ? "
+                  "WHERE username=?",
+                  (amount, amount, username))
 
     conn.commit()
 
@@ -235,28 +279,6 @@ def update_money(username, amount, context="win"):
         st.session_state.money_win = user[9]
 
     conn.close()
-
-
-# # Fonction pour mettre à jour les informations de l'utilisateur
-# def update_user(username, money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number):
-#     conn = sqlite3.connect('user/users.db')
-#     c = conn.cursor()
-#     c.execute("UPDATE users SET money=?,"
-#               "ship_list=?,"
-#               "enemy_list=?,"
-#               "fleet_size=?,"
-#               "win=?,"
-#               "loose=?,"
-#               "ratio_WL=?,"
-#               "money_win=?,"
-#               "money_spent=?,"
-#               "grade=?,"
-#               "p_letter=?,"
-#               "p_number=? "
-#               "WHERE username=?",
-#               (money, ship_list, enemy_list, fleet_size, win, loose, ratio_WL, money_win, money_spent, grade, p_letter, p_number, username))
-#     conn.commit()
-#     conn.close()
 
 
 def delete_user(username):
@@ -287,7 +309,12 @@ def add_ship(username, new_ship, add_to, fight=False, price=None):
 
         # Mettre à jour la base de données avec la nouvelle liste de navettes
         if fight is False:
-            c.execute("UPDATE users SET ship_list=?, money=money - ?, money_spent=money_spent + ? WHERE username=?", (updated_ship_list_json, price, price, username))
+            c.execute(""
+                      "UPDATE users SET ship_list=?,"
+                      "money=money - ?,"
+                      "money_spent=money_spent + ? "
+                      "WHERE username=?",
+                      (updated_ship_list_json, price, price, username))
             conn.commit()
 
             user = get_user(username)
@@ -351,7 +378,12 @@ def sell_ship(username, ship):
     updated_ship_list_json = json.dumps(current_ship_list)
 
     # Mettre à jour la base de données avec la nouvelle liste de navettes
-    c.execute("UPDATE users SET ship_list=?, money=money + ?, money_win=money_win + ? WHERE username=?", (updated_ship_list_json, money_earned, money_earned, username))
+    c.execute(""
+              "UPDATE users SET ship_list=?,"
+              "money=money + ?,"
+              "money_win=money_win + ? "
+              "WHERE username=?",
+              (updated_ship_list_json, money_earned, money_earned, username))
     conn.commit()
 
     user = get_user(username)
@@ -393,9 +425,11 @@ def remove_ship(username, ship, remove_from, fight=False):
         elif fight is True:
             # Mettre à jour la base de données avec la nouvelle liste de navettes
             c.execute("""
-                UPDATE users SET ship_list=?, loose=loose + ?,
-                    ratio_WL = CASE WHEN win > 0.00 THEN win / (loose + ?) ELSE 0.00 / (loose + ?) END WHERE username=?
-            """, (updated_ship_list_json, 1, 1.00, 1.00, username))
+                UPDATE users SET ship_list=?,
+                loose=loose + ?, 
+                ratio_WL = CASE WHEN win > 0.00 THEN win / (loose + ?) ELSE 0.00 / (loose + ?) END 
+                WHERE username=?""",
+                      (updated_ship_list_json, 1, 1.00, 1.00, username))
             conn.commit()
 
             user = get_user(username)
@@ -421,8 +455,11 @@ def remove_ship(username, ship, remove_from, fight=False):
         updated_enemy_list_json = json.dumps(current_enemy_list)
 
         # Mettre à jour la base de données avec la nouvelle liste de navettes
-        c.execute("UPDATE users SET enemy_list=?, win = win + ?, "
-                  "ratio_WL = CASE WHEN loose > 0.00 THEN (win + ?) / loose ELSE win + ? END WHERE username=?",
+        c.execute(""
+                  "UPDATE users SET enemy_list=?,"
+                  "win = win + ?,"
+                  "ratio_WL = CASE WHEN loose > 0.00 THEN (win + ?) / loose ELSE win + ? END "
+                  "WHERE username=?",
                   (updated_enemy_list_json, 1, 1.00, 1.00, username))
         conn.commit()
 
@@ -438,7 +475,12 @@ def remove_ship(username, ship, remove_from, fight=False):
 def upgrade_fleet_size(username, amount):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
-    c.execute("UPDATE users SET fleet_size=fleet_size + ?, money=money - ?, money_spent=money_spent + ? WHERE username=?", (5, amount, amount, username))
+    c.execute(""
+              "UPDATE users SET fleet_size=fleet_size + ?,"
+              "money=money - ?,"
+              "money_spent=money_spent + ? "
+              "WHERE username=?",
+              (5, amount, amount, username))
     conn.commit()
 
     # Mettre à jour st.session_state.money
@@ -457,7 +499,8 @@ def trade_token(username, number_battle):
 
     c.execute("""
         UPDATE users SET battle_played = CASE WHEN battle_played + ? >= 100 THEN 0 ELSE battle_played + ? END,
-            trade_token = CASE WHEN battle_played + ? >= 100 THEN trade_token + 1 ELSE trade_token END WHERE username=?
+        trade_token = CASE WHEN battle_played + ? >= 100 THEN trade_token + 1 ELSE trade_token END 
+        WHERE username=?
     """, (number_battle, number_battle, number_battle, username))
     conn.commit()
 
@@ -480,9 +523,13 @@ def upgrade_grade_commander(username, amount, p_letter, p_number):
     new_p_number = round(p_number + decimal.Decimal('0.0001'), 4)
 
     c.execute("""
-        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade = grade + ?, p_letter = ?, 
-            p_number = ? WHERE username = ?
-    """, (amount, amount, 1, float(new_p_letter), float(new_p_number), username))
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?, 
+        grade = grade + ?, 
+        p_letter = ?, 
+        p_number = ? 
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_p_letter), float(new_p_number), username))
 
     conn.commit()
     conn.close()
@@ -497,8 +544,12 @@ def upgrade_damage(username, amount, damage_bonus):
     new_damage_bonus = round(damage_bonus + decimal.Decimal('0.025'), 3)
 
     c.execute("""
-        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade_damage = grade_damage + ?, damage_bonus = ? WHERE username = ?
-    """, (amount, amount, 1, float(new_damage_bonus), username))
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?,
+        grade_damage = grade_damage + ?,
+        damage_bonus = ?
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_damage_bonus), username))
 
     conn.commit()
     conn.close()
@@ -513,8 +564,12 @@ def upgrade_resistance(username, amount, resistance_bonus):
     new_resistance_bonus = round(resistance_bonus + decimal.Decimal('0.025'), 3)
 
     c.execute("""
-        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade_resistance = grade_resistance + ?, resistance_bonus = ? WHERE username = ?
-    """, (amount, amount, 1, float(new_resistance_bonus), username))
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?,
+        grade_resistance = grade_resistance + ?,
+        resistance_bonus = ? 
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_resistance_bonus), username))
 
     conn.commit()
     conn.close()
@@ -529,8 +584,12 @@ def upgrade_agility(username, amount, agility_bonus):
     new_agility_bonus = round(agility_bonus + decimal.Decimal('0.09'), 3)
 
     c.execute("""
-        UPDATE users SET money = money - ?, money_spent = money_spent + ?, grade_agility = grade_agility + ?, agility_bonus = ? WHERE username = ?
-    """, (amount, amount, 1, float(new_agility_bonus), username))
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?,
+        grade_agility = grade_agility + ?,
+        agility_bonus = ? 
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_agility_bonus), username))
 
     conn.commit()
     conn.close()
@@ -553,9 +612,35 @@ def upgrade_treasure(username, amount, treasure_money_bonus, treasure_resource_b
     new_treasure_artifact_bonus = round(treasure_artifact_bonus + decimal.Decimal('0.01'), 3)
 
     c.execute("""
-        UPDATE users SET money = money - ?, money_spent = money_spent + ?,
-        grade_treasure = grade_treasure + ?, treasure_money_bonus = ?, treasure_resource_bonus = ?, treasure_artifact_bonus = ? WHERE username = ?
-    """, (amount, amount, 1, float(new_treasure_money_bonus), float(new_treasure_resource_bonus), float(new_treasure_artifact_bonus), username))
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?,
+        grade_treasure = grade_treasure + ?, 
+        treasure_money_bonus = ?, 
+        treasure_resource_bonus = ?, 
+        treasure_artifact_bonus = ? 
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_treasure_money_bonus), float(new_treasure_resource_bonus),
+               float(new_treasure_artifact_bonus), username))
+
+    conn.commit()
+    conn.close()
+
+
+def upgrade_commerce(username, amount, commerce_bonus):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 4
+    commerce_bonus = decimal.Decimal(commerce_bonus)
+    new_commerce_bonus = round(commerce_bonus + decimal.Decimal('-0.05'), 3)
+
+    c.execute("""
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?,
+        grade_commerce = grade_commerce + ?,
+        commerce_bonus = ? 
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_commerce_bonus), username))
 
     conn.commit()
     conn.close()

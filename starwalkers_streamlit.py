@@ -33,15 +33,6 @@ def game():
     st.session_state.page = "game"
 
 
-def display_stars(grade):
-    full_star = '⭐'
-    empty_star = '☆'
-    max_stars = 5
-
-    stars = full_star * grade + empty_star * (max_stars - grade)
-    return stars
-
-
 # Database initialization
 sql.init_db()
 
@@ -122,6 +113,13 @@ if st.session_state.page == "login":
                     st.session_state.treasure_money_bonus = user[23]
                     st.session_state.treasure_resource_bonus = user[24]
                     st.session_state.treasure_artifact_bonus = user[25]
+                    st.session_state.grade_commerce = user[26]
+                    st.session_state.commerce_bonus = user[27]
+                    st.session_state.grade_navigation = user[28]
+                    st.session_state.navigation_price_bonus = user[29]
+                    st.session_state.navigation_time_bonus = user[30]
+                    st.session_state.grade_token = user[31]
+                    st.session_state.token_bonus = user[32]
                     game() & st.rerun()
                 else:
                     col2.error("Username or password incorrect")
@@ -196,6 +194,13 @@ elif st.session_state.page == "game":
             st.session_state.p_number = None
             st.session_state.trade_token = None
             st.session_state.battle_played = None
+            st.session_state.grade_commerce = None
+            st.session_state.commerce_bonus = None
+            st.session_state.grade_navigation = None
+            st.session_state.navigation_price_bonus = None
+            st.session_state.navigation_time_bonus = None
+            st.session_state.grade_token = None
+            st.session_state.token_bonus = None
             login() & st.rerun()
         except Exception as e:
             col2.error(f"Problem during sign out: {e}")
