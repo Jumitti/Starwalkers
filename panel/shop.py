@@ -166,9 +166,10 @@ def shop(username, df, value_list):
                                  treasure_resource_bonus, treasure_artifact_bonus)
             time.sleep(0.75) & st.rerun()
 
-        colsu9.metric(f"⚡ Token Accelerator", "Soon", delta=5 if grade < 10 else "MAX")
-        # if colsu9.button(
-        #         f"⬆️ Upgrade\n\n{upgrade_fleet(fleet_size)}$",
-        #         disabled=True if money < upgrade_fleet(fleet_size) else False):
-        #     sql.upgrade_fleet_size(username, upgrade_fleet(fleet_size))
-        #     time.sleep(0.75) & st.rerun()
+        colsu9.metric(f"⚡ Token Accelerator", grade_token, delta=1 if grade_token < 10 else "MAX")
+        if colsu9.button(
+                f"⬆️ Upgrade\n\n{upgrade(grade_token, 0.3, 250)}$",
+                disabled=True if money < upgrade(grade_token, 0.3, 250) and grade_token < 10 else False,
+                key="token"):
+            sql.upgrade_token(username, upgrade(grade_token, 0.3, 250), token_bonus)
+            time.sleep(0.75) & st.rerun()

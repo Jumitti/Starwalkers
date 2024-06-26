@@ -94,7 +94,7 @@ def battle(username, df):
             if colselectfight2.button(f"FIGHT !"):
                 damage = random.randint(0, 100)
                 if value_player > value_enemies:
-                    sql.trade_token(username, len(styled_df_enemy['Ship']))
+                    sql.trade_token(username, len(styled_df_enemy['Ship']) + int(random.randint(0, token_bonus)))
                     money_win = int((sum(get_cost(ship) for ship in styled_df_enemy['Ship']) // 1.5) * random.uniform(1, treasure_money_bonus))
                     sql.update_money(username, money_win if money_win != 0 else 1, context="win")
                     for ship in styled_df_enemy['Ship']:
@@ -114,7 +114,7 @@ def battle(username, df):
                     time.sleep(2) & st.rerun()
 
                 if value_player <= value_enemies:
-                    sql.trade_token(username, len(shuttles_for_fight) + len(shuttles_for_fight) * token_bonus)
+                    sql.trade_token(username, len(shuttles_for_fight) + int(random.randint(0, token_bonus)))
                     for ship in shuttles_for_fight:
                         sql.remove_ship(username, ship, "player", fight=True)
                     for ship in styled_df_enemy['Ship']:

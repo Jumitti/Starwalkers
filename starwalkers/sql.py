@@ -52,7 +52,7 @@ def init_db():
                  navigation_price_bonus REAL,
                  navigation_time_bonus INTEGER,
                  grade_token INTEGER,
-                 token_bonus REAL)''')
+                 token_bonus INTEGER)''')
 
     # Vérifie si la colonne existe, sinon l'ajoute
     c.execute("PRAGMA table_info(users)")
@@ -119,8 +119,8 @@ def init_db():
         c.execute('ALTER TABLE users ADD COLUMN grade_token INTEGER DEFAULT 0')
         c.execute('UPDATE users SET grade_token = 0 WHERE grade_token IS NULL')
     if 'token_bonus' not in columns:
-        c.execute('ALTER TABLE users ADD COLUMN token_bonus REAL DEFAULT 0.00')
-        c.execute('UPDATE users SET token_bonus = 0.00 WHERE token_bonus IS NULL')
+        c.execute('ALTER TABLE users ADD COLUMN token_bonus INTEGER DEFAULT 0')
+        c.execute('UPDATE users SET token_bonus = 0 WHERE token_bonus IS NULL')
 
     conn.commit()
     conn.close()
@@ -173,7 +173,7 @@ def add_user(username, password):
                   username, hashed_password, 100, '', '', 10, 0, 0, 0.00, 0,
                   0, 0, 0.5, -0.0004, 0, 0, 0, 1.00, 0, 1.00,
                   0, 0.10, 0, 1.00, 1.00, 1.00, 0, 1.00, 0, 1.00,
-                  0, 0, 0.00))
+                  0, 0, 0))
     conn.commit()
     conn.close()
 
@@ -647,17 +647,13 @@ def upgrade_token(username, amount, token_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    decimal.getcontext().prec = 4
-    token_bonus = decimal.Decimal(token_bonus)
-    new_token_bonus = round(token_bonus + decimal.Decimal('-0.025'), 3)
-
     c.execute("""
         UPDATE users SET money = money - ?,
         money_spent = money_spent + ?,
         grade_token = grade_token + ?,
-        token_bonus = ?,
+        token_bonus = token_bonus + ?
         WHERE username = ?""",
-              (amount, amount, 1, float(new_token_bonus), username))
+              (amount, amount, 1, 1, username))
 
     conn.commit()
     conn.close()
