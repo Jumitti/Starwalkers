@@ -102,7 +102,7 @@ def battle(username, df):
                     st.session_state.pop('selected_ships_enemy', None)
                     for ship in shuttles_for_fight:
                         player_let, player_int = ship.split("-")
-                        new_number = int(player_int) - (int((damage * random.uniform(1, resistance_bonus))) // len(shuttles_for_fight))
+                        new_number = int(player_int) - (int((damage * random.uniform(resistance_bonus, 1))) // len(shuttles_for_fight))
                         if new_number >= 0:
                             update_ship = roll(letter=player_let, number=new_number)
                             sql.add_ship(username, update_ship, "player", fight=True)
@@ -114,7 +114,7 @@ def battle(username, df):
                     time.sleep(2) & st.rerun()
 
                 if value_player <= value_enemies:
-                    sql.trade_token(username, len(shuttles_for_fight))
+                    sql.trade_token(username, len(shuttles_for_fight) + len(shuttles_for_fight) * token_bonus)
                     for ship in shuttles_for_fight:
                         sql.remove_ship(username, ship, "player", fight=True)
                     for ship in styled_df_enemy['Ship']:

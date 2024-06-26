@@ -537,7 +537,7 @@ def upgrade_resistance(username, amount, resistance_bonus):
 
     decimal.getcontext().prec = 4
     resistance_bonus = decimal.Decimal(resistance_bonus)
-    new_resistance_bonus = round(resistance_bonus + decimal.Decimal('0.025'), 3)
+    new_resistance_bonus = round(resistance_bonus + decimal.Decimal('-0.025'), 3)
 
     c.execute("""
         UPDATE users SET money = money - ?,
