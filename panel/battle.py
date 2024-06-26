@@ -144,7 +144,7 @@ def battle(username, df):
         elif df.empty:
             st.warning("You don't have shuttles")
 
-    if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_list) > 0 else False):
+    if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_list) > 2 else False):
         for _ in range(random.randint(1, 10)):
             ship = roll(proba_letter=p_letter, proba_number=p_number)
             sql.add_ship(username, ship, "enemies")

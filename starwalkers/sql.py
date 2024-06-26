@@ -432,13 +432,6 @@ def remove_ship(username, ship, remove_from, fight=False):
                       (updated_ship_list_json, 1, 1.00, 1.00, username))
             conn.commit()
 
-            user = get_user(username)
-            st.session_state.ship_list = user[3]
-            st.session_state.loose = user[7]
-            st.session_state.ratio_WL = user[8]
-            st.session_state.battle_played = user[14]
-            st.session_state.battle_played = user[15]
-
     elif remove_from == "enemies":
         # Récupérer la ship_list actuelle du joueur
         c.execute("SELECT enemy_list FROM users WHERE username=?", (username,))
@@ -463,11 +456,6 @@ def remove_ship(username, ship, remove_from, fight=False):
                   (updated_enemy_list_json, 1, 1.00, 1.00, username))
         conn.commit()
 
-        user = get_user(username)
-        st.session_state.enemy_list = user[4]
-        st.session_state.win = user[6]
-        st.session_state.ratio_WL = user[8]
-
     conn.close()
 
 
@@ -482,13 +470,6 @@ def upgrade_fleet_size(username, amount):
               "WHERE username=?",
               (5, amount, amount, username))
     conn.commit()
-
-    # Mettre à jour st.session_state.money
-    user = get_user(username)
-    st.session_state.money = user[2]
-    st.session_state.fleet_size = user[5]
-    st.session_state.money_spent = user[10]
-
     conn.close()
 
 
@@ -503,11 +484,6 @@ def trade_token(username, number_battle):
         WHERE username=?
     """, (number_battle, number_battle, number_battle, username))
     conn.commit()
-
-    user = get_user(username)
-    st.session_state.trade_token = user[14]
-    st.session_state.battle_played = user[15]
-
     conn.close()
 
 
@@ -662,6 +638,26 @@ def upgrade_navigation(username, amount, navigation_price_bonus, navigation_time
         navigation_time_bonus
         WHERE username = ?""",
               (amount, amount, 1, float(new_navigation_price_bonus), 2, username))
+
+    conn.commit()
+    conn.close()
+
+
+def upgrade_token(username, amount, token_bonus):
+    conn = sqlite3.connect('user/users.db')
+    c = conn.cursor()
+
+    decimal.getcontext().prec = 4
+    token_bonus = decimal.Decimal(token_bonus)
+    new_token_bonus = round(token_bonus + decimal.Decimal('-0.025'), 3)
+
+    c.execute("""
+        UPDATE users SET money = money - ?,
+        money_spent = money_spent + ?,
+        grade_token = grade_token + ?,
+        token_bonus = ?,
+        WHERE username = ?""",
+              (amount, amount, 1, float(new_token_bonus), username))
 
     conn.commit()
     conn.close()
