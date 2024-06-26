@@ -98,16 +98,16 @@ def ID_card(username, display="community_info"):
             colsu1, colsu2, colsu3 = st.columns(3, gap="small")
             colsu1.metric(f"⭐ Galactic Commander", grade, delta="" if grade < 5 else "MAX")
             colsu2.metric(f"🚀 Armada Expansion", fleet_size)
-            colsu3.metric(f"🧭 Astral Navigator", grade_navigation, delta="" if grade < 10 else "MAX")
+            colsu3.metric(f"🧭 Astral Navigator", grade_navigation, delta="" if grade_navigation < 10 else "MAX")
 
             colsu4, colsu5, colsu6 = st.columns(3, gap="small")
-            colsu4.metric(f"💥 Stellar Strike", grade_damage, delta="" if grade < 10 else "MAX")
-            colsu5.metric(f"🛡️ Cosmic Fortitude", grade_resistance, delta="" if grade < 10 else "MAX")
-            colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="" if grade < 10 else "MAX")
+            colsu4.metric(f"💥 Stellar Strike", grade_damage, delta="" if grade_damage < 10 else "MAX")
+            colsu5.metric(f"🛡️ Cosmic Fortitude", grade_resistance, delta="" if grade_resistance < 10 else "MAX")
+            colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="" if grade_agility < 10 else "MAX")
 
             colsu7, colsu8, colsu9 = st.columns(3, gap="small")
-            colsu7.metric(f"🛒 Interstellar Commerce", grade_commerce, delta="" if grade < 10 else "MAX")
-            colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta="" if grade < 10 else "MAX")
-            colsu9.metric(f"⚡ Token Accelerator", grade_token, delta="" if grade < 10 else "MAX")
+            colsu7.metric(f"🛒 Interstellar Commerce", grade_commerce, delta="" if grade_commerce < 10 else "MAX")
+            colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta="" if grade_treasure < 10 else "MAX")
+            colsu9.metric(f"⚡ Token Accelerator", grade_token, delta="" if grade_token < 10 else "MAX")
 
         return df, value_list

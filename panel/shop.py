@@ -47,13 +47,13 @@ def shop(username, df, value_list):
     colopencase1, colopencase2 = st.columns([2, 1], gap="small")
     open_case = colopencase1.slider(
         "**📦 ➡ 🚀 Buy shuttles**",
-        value=int(min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) / 2) if min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) > 0 else 1, step=1,
-        min_value=0, max_value=int(min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) if min(fleet_size - len(df), money / ((10 + 50 * grade) * commerce_bonus)) >= 1 else 1),
-        disabled=True if money < ((10 + 50 * grade) * commerce_bonus) or len(df) >= fleet_size else False)
+        value=int(min(fleet_size - len(df), money / ((10 + 10 * grade) * commerce_bonus)) / 2) if min(fleet_size - len(df), money / ((10 + 10 * grade) * commerce_bonus)) > 0 else 1, step=1,
+        min_value=0, max_value=int(min(fleet_size - len(df), money / ((10 + 10 * grade) * commerce_bonus)) if min(fleet_size - len(df), money / ((10 + 10 * grade) * commerce_bonus)) >= 1 else 1),
+        disabled=True if money < ((10 + 10 * grade) * commerce_bonus) or len(df) >= fleet_size else False)
 
     colopencase2.markdown("")
-    if colopencase2.button(f"Open {open_case} case(s) for {open_case * ((10 + 50 * grade) * commerce_bonus)}$",
-                           disabled=True if money < ((10 + 50 * grade) * commerce_bonus) or len(df) >= fleet_size else False):
+    if colopencase2.button(f"Open {open_case} case(s) for {open_case * ((10 + 10 * grade) * commerce_bonus)}$",
+                           disabled=True if money < ((10 + 10 * grade) * commerce_bonus) or len(df) >= fleet_size else False):
         for i in range(0, open_case):
             ship = roll(proba_letter=p_letter, proba_number=p_number)
             sql.add_ship(username, ship, price=10, add_to="player")
@@ -147,7 +147,7 @@ def shop(username, df, value_list):
 
         colsu7, colsu8, colsu9 = st.columns(3, gap="small")
 
-        colsu7.metric(f"🛒 Interstellar Commerce", "Soon", delta=1 if grade_commerce < 10 else "MAX")
+        colsu7.metric(f"🛒 Interstellar Commerce", grade_commerce, delta="-5%" if grade_commerce < 10 else "MAX")
         if colsu7.button(
                 f"⬆️ Upgrade\n\n{upgrade(grade_commerce, 0.4, 500)}$",
                 disabled=True if money < upgrade(grade_commerce, 0.4, 500) and grade_commerce < 10 else False,
