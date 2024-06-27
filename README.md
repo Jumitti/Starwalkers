@@ -31,7 +31,7 @@ Starwalkers prioritizes the security of player accounts through the following me
    - Run the game: `streamlit run starwalkers_streamlit.py`
 
 3. **Running Backup Script:**
-   - For database backup, run `python schedule.py` in parallel to ensure data safety during updates or unexpected events.
+   - For database backup, run `python tasks_scheduled.py` in parallel to ensure data safety during updates or unexpected events.
 
 4. **Gameplay Tips:**
    - Purchase new ships to expand and strengthen your fleet.
