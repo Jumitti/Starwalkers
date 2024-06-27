@@ -7,7 +7,7 @@ import base64
 import pandas as pd
 import streamlit as st
 
-from starwalkers import sql,sound_effects
+from starwalkers import sql, sound_effects
 from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet
 from panel import ID_card, shop, community, battle
 
@@ -78,14 +78,15 @@ with st.sidebar.expander("Info and help", expanded=False):
       - Game by Gametoy20: [https://github.com/Gametoy20](https://github.com/Gametoy20)
       - Streamlit app and maintain by Jumitti: [https://github.com/Jumitti](https://github.com/Jumitti)
     """)
-audio = st.sidebar.toggle("Audio", value=False)
+
+    audio = st.sidebar.toggle("Audio", value=False)
 
 # Login page
 if st.session_state.page == "login":
     try:
         col2.title("Login")
         if audio:
-            sound_effects.connexion_page()
+            sound_effects.main_game()
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
         if col2.button("Login"):
@@ -141,8 +142,8 @@ elif st.session_state.page == "register":
 
     try:
         col2.title("Register")
-        if audio:
-            sound_effects.connexion_page()
+        if audio is True:
+            sound_effects.main_game()
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
         if col2.button("Register"):
@@ -168,7 +169,6 @@ elif st.session_state.page == "game":
         sound_effects.main_game()
     # Sidebar
     st.sidebar.divider()
-
     # Sidebar delete account
     if st.sidebar.toggle("🚮 Delete my account"):
         password = st.sidebar.text_input("Entrez votre mot de passe", type="password", label_visibility="collapsed",
