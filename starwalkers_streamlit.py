@@ -96,7 +96,7 @@ if st.session_state.page == "login":
     try:
         col2.title("Login")
         if st.session_state.ambient_sound:
-            sound_effects.main_game()
+            sound_effects.ambient()
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
         if col2.button("Login"):
@@ -153,7 +153,7 @@ elif st.session_state.page == "register":
     try:
         col2.title("Register")
         if st.session_state.ambient_sound is True:
-            sound_effects.main_game()
+            sound_effects.ambient()
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
         if col2.button("Register"):
@@ -176,7 +176,7 @@ elif st.session_state.page == "register":
 # Game page
 elif st.session_state.page == "game":
     if st.session_state.ambient_sound:
-        sound_effects.main_game()
+        sound_effects.ambient()
     # Sidebar
     st.sidebar.divider()
     # Sidebar delete account
