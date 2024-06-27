@@ -56,7 +56,8 @@ def battle(username, df):
             enemy_data.append(
                 {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲')})
         if enemy_data:
-            sound_effects.battle()
+            if st.session_state.effect_sound:
+                sound_effects.battle()
             df_enemy = pd.DataFrame(enemy_data).sort_values(by="Value", ascending=False)
             styled_df_enemy = df_enemy.style.set_table_styles(
                 [

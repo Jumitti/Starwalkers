@@ -79,13 +79,23 @@ with st.sidebar.expander("Info and help", expanded=False):
       - Streamlit app and maintain by Jumitti: [https://github.com/Jumitti](https://github.com/Jumitti)
     """)
 
-    audio = st.sidebar.toggle("Audio", value=False)
+    if "ambient_sound" not in st.session_state:
+        st.session_state.ambient_sound = False
+        st.session_state.effect_sound = False
+    with st.sidebar.expander("Audio"):
+        if st.toggle("Audio"):
+            st.session_state.ambient_sound = st.toggle("Ambient sound", value=True)
+            st.session_state.effect_sound = st.toggle("Effect sound", value=True)
+        else:
+            st.session_state.ambient_sound = False
+            st.session_state.effect_sound = False
+
 
 # Login page
 if st.session_state.page == "login":
     try:
         col2.title("Login")
-        if audio:
+        if st.session_state.ambient_sound:
             sound_effects.main_game()
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
@@ -142,7 +152,7 @@ elif st.session_state.page == "register":
 
     try:
         col2.title("Register")
-        if audio is True:
+        if st.session_state.ambient_sound is True:
             sound_effects.main_game()
         username = col2.text_input("Username")
         password = col2.text_input("Password", type="password")
@@ -165,7 +175,7 @@ elif st.session_state.page == "register":
 
 # Game page
 elif st.session_state.page == "game":
-    if audio:
+    if st.session_state.ambient_sound:
         sound_effects.main_game()
     # Sidebar
     st.sidebar.divider()
