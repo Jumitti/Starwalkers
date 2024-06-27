@@ -3,7 +3,7 @@ import time
 
 import streamlit as st
 
-from starwalkers import sql
+from starwalkers import sql, sound_effects
 from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet, upgrade
 
 
@@ -51,9 +51,15 @@ def shop(username, df, value_list):
         min_value=0, max_value=int(min(fleet_size - len(df), money / ((10 + 10 * grade) * commerce_bonus)) if min(fleet_size - len(df), money / ((10 + 10 * grade) * commerce_bonus)) >= 1 else 1),
         disabled=True if money < ((10 + 10 * grade) * commerce_bonus) or len(df) >= fleet_size else False)
 
+    if "buy_shuttles" not in st.session_state:
+        st.session_state.buy_shuttles = False
+    if st.session_state.buy_shuttles is True:
+        sound_effects.shuttles()
+        st.session_state.buy_shuttles = False
     colopencase2.markdown("")
     if colopencase2.button(f"Open {open_case} case(s) for {open_case * ((10 + 10 * grade) * commerce_bonus)}$",
                            disabled=True if money < ((10 + 10 * grade) * commerce_bonus) or len(df) >= fleet_size else False):
+        st.session_state.buy_shuttles = True
         for i in range(0, open_case):
             ship = roll(proba_letter=p_letter, proba_number=p_number)
             sql.add_ship(username, ship, price=10, add_to="player")

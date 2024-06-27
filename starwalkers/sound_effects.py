@@ -4,22 +4,22 @@ import os
 import streamlit as st
 
 
+def shuttles():
+    audio_files = [os.path.join('./sounds/effect/shuttles/', f) for f in os.listdir('./sounds/effect/shuttles/') if
+                   f.endswith('.mp3')]
+    effect(audio_files)
+
+
 def battle():
     audio_files = [os.path.join('./sounds/effect/battle/', f) for f in os.listdir('./sounds/effect/battle/') if f.endswith('.mp3')]
+    effect(audio_files)
+
+
+def effect(audio_files):
     st.markdown(f"""
                 <audio id="audio" autoplay>
                     <source src="data:audio/mp3;base64,{base64.b64encode(open(random.choice(audio_files), 'rb').read()).decode()}" type="audio/mp3">
-                </audio>
-                <script>
-                    var audio = document.getElementById('audio');
-                    audio.volume = 1.0;
-                    document.addEventListener('DOMContentLoaded', function() {{
-                        audio.play().catch(function(error) {{
-                            console.log('Playback prevented: ' + error);
-                        }});
-                    }});
-                </script>
-                """, unsafe_allow_html=True)
+                </audio>""", unsafe_allow_html=True)
 
 
 def ambient():
@@ -38,14 +38,4 @@ def ambient():
                 <audio id="audio" autoplay loop>
                     <source src="data:audio/mp3;base64,{audio_data}" type="audio/mp3">
                     Your browser does not support the audio element.
-                </audio>
-                <script>
-                    var audio = document.getElementById('audio');
-                    audio.volume = 1.0;
-                    document.addEventListener('DOMContentLoaded', function() {{
-                        audio.play().catch(function(error) {{
-                            console.log('Playback prevented: ' + error);
-                        }});
-                    }});
-                </script>
-            """, unsafe_allow_html=True)
+                </audio>""", unsafe_allow_html=True)
