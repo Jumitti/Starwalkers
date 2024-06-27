@@ -119,7 +119,7 @@ def shop(username, df, value_list):
                     f"⬆️ Upgrade\n\n{upgrade(grade_navigation, 0.3, 500)}$",
                     disabled=True if money < upgrade(grade_navigation, 0.3, 500) and grade_navigation < 10 else False,
                     key="navigation"):
-                sql.upgrade_damage(username, upgrade(grade_navigation, 0.3, 500), grade_navigation)
+                sql.upgrade_navigation(username, upgrade(grade_navigation, 0.3, 500), navigation_price_bonus, navigation_time_bonus)
                 time.sleep(0.75) & st.rerun()
 
         colsu4, colsu5, colsu6 = st.columns(3, gap="small")

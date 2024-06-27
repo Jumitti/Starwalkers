@@ -641,7 +641,7 @@ def upgrade_navigation(username, amount, navigation_price_bonus, navigation_time
         money_spent = money_spent + ?,
         grade_navigation = grade_navigation + ?,
         navigation_price_bonus = ?,
-        navigation_time_bonus
+        navigation_time_bonus = navigation_time_bonus + ?
         WHERE username = ?""",
               (amount, amount, 1, float(new_navigation_price_bonus), 2, username))
 
