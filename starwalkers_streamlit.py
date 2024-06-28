@@ -182,6 +182,8 @@ elif st.session_state.page == "game":
         sound_effects.ambient()
     # Sidebar
     st.sidebar.divider()
+    if st.sidebar.button("🧹 Refresh"):
+        st.rerun()
     # Sidebar delete account
     if st.sidebar.toggle("🚮 Delete my account"):
         password = st.sidebar.text_input("Entrez votre mot de passe", type="password", label_visibility="collapsed",

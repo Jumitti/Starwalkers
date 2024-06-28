@@ -16,6 +16,18 @@ def display_stars(grade):
     return stars
 
 
+def format_money(value):
+    """Format money value into a more readable string with suffixes."""
+    if value >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
+    elif value >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M"
+    elif value >= 1_000:
+        return f"{value / 1_000:.2f}K"
+    else:
+        return f"{value}"
+
+
 def ID_card(username, display="community_info"):
     user_info = sql.get_user(username)
     money = user_info[2]
@@ -55,9 +67,9 @@ def ID_card(username, display="community_info"):
 
         st.subheader("💲 Resources")
         colres1, colres2, colres3, colres4 = st.columns(4, gap="small")
-        colres1.metric(f"💲 Money", f"{money}$")
-        colres2.metric(f"💵 Money earned", f"{money_win}$")
-        colres3.metric(f"🏷️ Money spent", f"{user_info[10]}$")
+        colres1.metric(f"💲 Money", f"{format_money(money)}$")
+        colres2.metric(f"💵 Money earned", f"{format_money(money_win)}$")
+        colres3.metric(f"🏷️ Money spent", f"{format_money(money_spent)}$")
         colres4.metric(f"🪙 Trade token", f"{trade_token}")
         if display == "player_info":
             colres4.progress(battle_played)
