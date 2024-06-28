@@ -10,7 +10,7 @@ from starwalkers.func import roll, get_d_sym, get_cost
 
 
 def battle(username, df):
-    user_info = sql.get_user(username)
+    user_info = sql.get_user(username)  # Some elements are not necessary
     money = user_info[2]
     ship_list = user_info[3]
     enemy_list = user_info[4]
@@ -43,15 +43,27 @@ def battle(username, df):
     grade_token = user_info[31]
     token_bonus = user_info[32]
 
+    # Header
     st.header("⚔️ Space war")
     colwar1, colwar2 = st.columns(2, gap="small")
 
     if 'selected_ships_enemy' not in st.session_state or not st.session_state.selected_ships_enemy:
         st.session_state.selected_ships_enemy = []
 
+    # Begin the battle
+    if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_list) > 2 else False):
+        for _ in range(random.randint(1, 10)):
+            ship = roll(proba_letter=p_letter, proba_number=p_number)
+            sql.add_ship(username, ship, "enemies")
+        st.toast("⚔️ The enemies enter the battles")
+        time.sleep(0.75) & st.rerun()
+
+    # During the battle
     if enemy_list:
         enemy_data = []
         colfight1, colfight2 = st.columns(2, gap="small")
+
+        # Display enemies and selected enemies
         for ship in json.loads(enemy_list):
             enemy_data.append(
                 {"Ship": ship, "Value": get_d_sym(get_cost(ship)).replace('$', '💲')})
@@ -68,12 +80,10 @@ def battle(username, df):
             colfight1.write("Enemies list:")
             colfight1.dataframe(styled_df_enemy, use_container_width=True, hide_index=True)
 
-            # Vérifiez et sélectionnez aléatoirement les navires ennemis si nécessaire
             if not st.session_state.selected_ships_enemy:
                 num_ships_to_select = random.randint(1, 4 if len(enemy_data) >= 4 else len(enemy_data))
                 st.session_state.selected_ships_enemy = random.sample(enemy_data, num_ships_to_select)
 
-            # Affichage des navires sélectionnés dans le deuxième tableau
             colfight2.write("Fight against:")
             styled_df_enemy = pd.DataFrame(st.session_state.selected_ships_enemy).sort_values(by="Value",
                                                                                               ascending=False)
@@ -83,6 +93,7 @@ def battle(username, df):
             ]).set_properties(**{'text-align': 'left'})
             colfight2.dataframe(styled_selected_df_enemy, use_container_width=True, hide_index=True)
 
+        # Selection of shuttles to fight
         if not df.empty and enemy_data:
             colselectfight1, colselectfight2 = st.columns([2, 1], gap="small")
             shuttles_for_fight = colselectfight1.multiselect("Select shuttles to fight", df["Ship"].tolist(),
@@ -91,10 +102,10 @@ def battle(username, df):
                                                              max_selections=4, default=df["Ship"].tolist()[:4])
             value_player = int(sum(get_cost(ship) for ship in shuttles_for_fight) * random.uniform(1, damage_bonus))
             value_enemies = int(sum(get_cost(ship) for ship in styled_df_enemy["Ship"]))
-            # colselectfight2.write(value_enemies)
-            # colselectfight2.write(value_player)
             if colselectfight2.button(f"FIGHT !"):
                 damage = random.randint(0, 100)
+
+                # Win
                 if value_player > value_enemies:
                     sql.trade_token(username, len(styled_df_enemy['Ship']) + int(random.randint(0, token_bonus)))
                     money_win = int((sum(get_cost(ship) for ship in styled_df_enemy['Ship']) // 1.5) * random.uniform(1, treasure_money_bonus))
@@ -105,16 +116,17 @@ def battle(username, df):
                     for ship in shuttles_for_fight:
                         player_let, player_int = ship.split("-")
                         new_number = int(player_int) - (int((damage * random.uniform(resistance_bonus, 1))) // len(shuttles_for_fight))
-                        if new_number >= 0:
+                        if new_number >= 0:  # Shuttles operational
                             update_ship = roll(letter=player_let, number=new_number)
                             sql.add_ship(username, update_ship, "player", fight=True)
                             sql.remove_ship(username, ship, "player")
-                        else:
+                        else:  # Shuttles broken
                             sql.remove_ship(username, ship, "player", fight=True)
                             st.toast(f"💥 You loose {ship} in the battle.")
                     st.toast(f'🏆 You win the battle. 💲 Money win: {money_win}$. 🛠️ Damage: {damage}.')
                     time.sleep(2) & st.rerun()
 
+                # Loose
                 if value_player <= value_enemies:
                     sql.trade_token(username, len(shuttles_for_fight) + int(random.randint(0, token_bonus)))
                     for ship in shuttles_for_fight:
@@ -122,17 +134,18 @@ def battle(username, df):
                     for ship in styled_df_enemy['Ship']:
                         enemy_let, enemy_int = ship.split("-")
                         new_number = int(enemy_int) - (int((damage / random.uniform(1, resistance_bonus))) // len(styled_df_enemy))
-                        if new_number >= 0:
+                        if new_number >= 0:  # Shuttles operational
                             update_ship = roll(letter=enemy_let, number=new_number)
                             sql.add_ship(username, update_ship, "enemies", fight=True)
                             sql.remove_ship(username, ship, "enemies")
-                        else:
+                        else:  # Shuttles broken
                             sql.remove_ship(username, ship, "enemies", fight=True)
                     st.session_state.pop('selected_ships_enemy', None)
                     st.toast(
                         f'💥 You lost the battle and {" ".join(ship for ship in shuttles_for_fight)} shuttle(s)')
                     time.sleep(0.75) & st.rerun()
 
+            # Leave (coward)
             if colwar2.button("🏃‍♂️Leave fight"):
                 if random.random() <= agility_bonus:
                     for ship in json.loads(enemy_list):
@@ -145,10 +158,3 @@ def battle(username, df):
 
         elif df.empty:
             st.warning("You don't have shuttles")
-
-    if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_list) > 2 else False):
-        for _ in range(random.randint(1, 10)):
-            ship = roll(proba_letter=p_letter, proba_number=p_number)
-            sql.add_ship(username, ship, "enemies")
-        st.toast("⚔️ The enemies enter the battles")
-        time.sleep(0.75) & st.rerun()

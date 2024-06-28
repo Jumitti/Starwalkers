@@ -7,17 +7,17 @@ from starwalkers import sql
 from starwalkers.func import get_d_sym, get_cost
 
 
+# Display Commander Grade with stars
 def display_stars(grade):
     full_star = '⭐'
     empty_star = '☆'
     max_stars = 5
-
     stars = full_star * grade + empty_star * (max_stars - grade)
     return stars
 
 
+# Reformatting money
 def format_money(value):
-    """Format money value into a more readable string with suffixes."""
     if value >= 1_000_000_000:
         return f"{value / 1_000_000_000:.2f}B"
     elif value >= 1_000_000:
@@ -29,7 +29,7 @@ def format_money(value):
 
 
 def ID_card(username, display="community_info"):
-    user_info = sql.get_user(username)
+    user_info = sql.get_user(username)  # Some elements are not necessary
     money = user_info[2]
     ship_list = user_info[3]
     enemy_list = user_info[4]
@@ -61,10 +61,11 @@ def ID_card(username, display="community_info"):
     navigation_time_bonus = user_info[30]
     grade_token = user_info[31]
     token_bonus = user_info[32]
-    
+
     if user_info:
         st.header(f"🧑🏽‍🚀 Captain {username}'s ID Card {display_stars(grade)}")
 
+        # Resources (money)
         st.subheader("💲 Resources")
         colres1, colres2, colres3, colres4 = st.columns(4, gap="small")
         colres1.metric(f"💲 Money", f"{format_money(money)}$")
@@ -74,6 +75,7 @@ def ID_card(username, display="community_info"):
         if display == "player_info":
             colres4.progress(battle_played)
 
+        # Space fleet
         st.subheader("🚀 Space Fleet")
         with st.expander(f"Space fleet capacity: {fleet_size} ships", expanded=True):
             ship_data = []
@@ -99,12 +101,14 @@ def ID_card(username, display="community_info"):
             else:
                 df = pd.DataFrame()
 
+        # Stats battles
         st.subheader("⚔️ Battles")
         colbattle1, colbattle2, colbattle3 = st.columns(3, gap="small")
         colbattle1.metric(f"🏆 Win", f"{win}")
         colbattle2.metric(f"💥 Loose", f"{loose}")
         colbattle3.metric(f"⚖️ Win/Loss Ratio", f"{ratio_WL}")
 
+        # Skills and trophies
         st.subheader("🏆 Skills and trophies")
         if display == "player_info":
             colsu1, colsu2, colsu3 = st.columns(3, gap="small")

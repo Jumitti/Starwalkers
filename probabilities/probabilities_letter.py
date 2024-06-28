@@ -12,9 +12,8 @@ for value in [round(0.0 + i * 0.1, 1) for i in range(6)]:
     total = sum(probabilities)
     probabilities = [p / total for p in probabilities]
 
-    # Sauvegarde des probabilités dans un fichier JSON
     with open(f'probabilities_letter_{value}.json', 'w') as f:
         json.dump(probabilities, f)
 
-    print(f"Probabilités pour value={value} sauvegardées avec succès.")
+    print(f"Probabilities for value={value} saved successfully.")
 

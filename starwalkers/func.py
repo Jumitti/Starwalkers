@@ -5,7 +5,7 @@ import random
 
 def got_let_int(letter):  # Letter value
     letters = {
-        "*": 100,
+        "*": 100,  # This one not accessible by random buy of shuttles
         "A": 26,
         "B": 25,
         "C": 24,
@@ -39,6 +39,7 @@ def roll(proba_letter=None, proba_number=None, number_min=None, number_max=None,
     letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
                'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
+    # To manage categories
     if letter_min or letter_max:
         min_index = letters.index(letter_min.upper())
         max_index = letters.index(letter_max.upper())
@@ -48,24 +49,27 @@ def roll(proba_letter=None, proba_number=None, number_min=None, number_max=None,
             sub_letters = letters[max_index:min_index + 1]
         ship_let = random.choice(sub_letters)
 
+    # Specific letter
     elif letter is not None:
         ship_let = letter
 
+    # Random letter
     else:
-        letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-                   'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
         with open(f'probabilities/probabilities_letter_{proba_letter}.json', 'r') as f:
             probabilities = json.load(f)
         ship_let = random.choices(letters, weights=probabilities)[0]
 
+    # To manage categories
     if number_min or number_max:
         number_min = 0 if number_min is None else number_min
         number_max = 9999 if number_max is None else number_max
         ran = random.randint(number_min, number_max) if number is None else number
 
+    # Specific number
     elif number is not None:
         ran = number
 
+    # Random number
     else:
         digits = list(range(10000))
         with open(f'probabilities/probabilities_number_{proba_number}.json', 'r') as f:
@@ -91,7 +95,7 @@ def get_cost(a):  # Get cost of a ship
     return cost
 
 
-def upgrade_fleet(fleet_size):
+def upgrade_fleet(fleet_size):  # Price for upgrade fleet size
     x1 = 10
     y1 = 0.5
     x2 = 40
@@ -102,6 +106,6 @@ def upgrade_fleet(fleet_size):
     return price
 
 
-def upgrade(grade, coefficient, multiplier):
+def upgrade(grade, coefficient, multiplier):  # Price for skills and others capacities
     price = math.floor(multiplier * math.exp(coefficient * (grade + 1)))
     return price

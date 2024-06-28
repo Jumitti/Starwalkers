@@ -7,7 +7,7 @@ from starwalkers import sql
 
 
 def community(username):
-    user_info = sql.get_user(username)
+    user_info = sql.get_user(username)  # Some elements are not necessary
     money = user_info[2]
     ship_list = user_info[3]
     enemy_list = user_info[4]
@@ -40,18 +40,23 @@ def community(username):
     grade_token = user_info[31]
     token_bonus = user_info[32]
 
+    # Header
     st.header("👨🏼‍🚀 Community")
     usernames = sql.get_user()
     default_user = username if username in sql.get_user() else usernames[0]
+
     colcom1, colcom2 = st.columns([2, 1], gap="small")
     selected_username = colcom1.selectbox('👨🏽‍🚀 See a Captain', usernames, placeholder="Choose a captain")
+
     if selected_username:
         colcom2.markdown("")
         colcom2.markdown("")
         if colcom2.toggle(f"{selected_username} ID card"):
-            ID_card.ID_card(selected_username)
+            ID_card.ID_card(selected_username)  # See selected user
 
             colsm1, colsm2 = st.columns([2, 1], gap="small")
+
+            # Send money
             send_money = colsm1.slider("💸 Send money", step=1, min_value=0,
                                        max_value=money if money > 0 else 1,
                                        disabled=True if money < 1 or selected_username == username else False)

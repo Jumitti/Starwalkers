@@ -1,7 +1,7 @@
+import decimal
 import json
 import os
 import sqlite3
-import decimal
 
 import bcrypt
 import streamlit as st
@@ -10,7 +10,7 @@ from bcrypt import checkpw
 from starwalkers.func import get_cost
 
 
-# Fonction pour initialiser la base de données
+# Function to initialize the database
 def init_db():
     if not os.path.exists('user'):
         os.makedirs('user')
@@ -18,7 +18,6 @@ def init_db():
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    # Crée une table temporaire sans la colonne 'money'
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (username TEXT PRIMARY KEY,
                  password_hash TEXT,
@@ -54,7 +53,7 @@ def init_db():
                  grade_token INTEGER,
                  token_bonus INTEGER)''')
 
-    # Vérifie si la colonne existe, sinon l'ajoute
+    # Checks if the column exists, otherwise adds it
     c.execute("PRAGMA table_info(users)")
     columns = [column[1] for column in c.fetchall()]
 
@@ -126,7 +125,7 @@ def init_db():
     conn.close()
 
 
-# Fonction pour ajouter un utilisateur avec mot de passe hashé
+# Add a user with hashed password
 def add_user(username, password):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -178,6 +177,7 @@ def add_user(username, password):
     conn.close()
 
 
+# DEPRECATED BUT MAYBE USEFUL
 # def reset_profile(username):
 #     conn = sqlite3.connect('user/users.db')
 #     c = conn.cursor()
@@ -213,14 +213,14 @@ def add_user(username, password):
 #     conn.close()
 
 
-# Fonction pour hasher le mot de passe
+# Hasher password
 def hash_password(password):
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_password.decode('utf-8')
 
 
-# Fonction pour vérifier si le mot de passe correspond
+# Check password
 def check_password(username, password):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -234,7 +234,7 @@ def check_password(username, password):
         return False
 
 
-# Fonction pour obtenir un utilisateur
+# Retrieve user information
 def get_user(username=None):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -248,7 +248,7 @@ def get_user(username=None):
     return user
 
 
-# Fonction pour mettre à jour les informations de l'utilisateur (argent)
+# Update money
 def update_money(username, amount, context="win"):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -281,6 +281,7 @@ def update_money(username, amount, context="win"):
     conn.close()
 
 
+# Delete user
 def delete_user(username):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -289,26 +290,19 @@ def delete_user(username):
     conn.close()
 
 
+# Add shuttles
 def add_ship(username, new_ship, add_to, fight=False, price=None):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    if add_to == "player":
-        # Récupérer la ship_list actuelle du joueur
+    if add_to == "player":  # For player
         c.execute("SELECT ship_list FROM users WHERE username=?", (username,))
         current_ship_list_json = c.fetchone()[0]
-
-        # Charger la liste actuelle depuis JSON ou initialiser une liste vide si elle est nulle
         current_ship_list = json.loads(current_ship_list_json) if current_ship_list_json else []
-
-        # Ajouter la nouvelle navette à la liste
         current_ship_list.append(new_ship)
-
-        # Convertir la liste en JSON pour la sauvegarde dans la base de données
         updated_ship_list_json = json.dumps(current_ship_list)
 
-        # Mettre à jour la base de données avec la nouvelle liste de navettes
-        if fight is False:
+        if fight is False:  # Not in fight, e.g: buy shuttles
             c.execute(""
                       "UPDATE users SET ship_list=?,"
                       "money=money - ?,"
@@ -321,7 +315,8 @@ def add_ship(username, new_ship, add_to, fight=False, price=None):
             st.session_state.money = user[2]
             st.session_state.ship_list = user[3]
             st.session_state.money_spent = user[10]
-        elif fight is True:
+
+        elif fight is True:  # During fight
             c.execute("""
                 UPDATE users 
                 SET 
@@ -332,21 +327,13 @@ def add_ship(username, new_ship, add_to, fight=False, price=None):
             user = get_user(username)
             st.session_state.ship_list = user[3]
 
-    elif add_to == "enemies":
-        # Récupérer la ship_list actuelle du joueur
+    elif add_to == "enemies":  # For enemies
         c.execute("SELECT enemy_list FROM users WHERE username=?", (username,))
         current_enemy_list_json = c.fetchone()[0]
-
-        # Charger la liste actuelle depuis JSON ou initialiser une liste vide si elle est nulle
         current_enemy_list = json.loads(current_enemy_list_json) if current_enemy_list_json else []
-
-        # Ajouter la nouvelle navette à la liste
         current_enemy_list.append(new_ship)
-
-        # Convertir la liste en JSON pour la sauvegarde dans la base de données
         updated_enemy_list_json = json.dumps(current_enemy_list)
 
-        # Mettre à jour la base de données avec la nouvelle liste de navettes
         c.execute("UPDATE users SET enemy_list=? WHERE username=?",
                   (updated_enemy_list_json, username))
         conn.commit()
@@ -357,27 +344,20 @@ def add_ship(username, new_ship, add_to, fight=False, price=None):
     conn.close()
 
 
-# Fonction pour supprimer une navette spécifique d'un utilisateur
+# Sell shuttles (can be compiled with remove_ship)
 def sell_ship(username, ship):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    # Récupérer la ship_list actuelle du joueur
     c.execute("SELECT ship_list FROM users WHERE username=?", (username,))
     current_ship_list_json = c.fetchone()[0]
-
-    # Charger la liste actuelle depuis JSON
     current_ship_list = json.loads(current_ship_list_json)
 
-    # Supprimer la navette spécifique
     if ship in current_ship_list:
         money_earned = get_cost(ship)
         current_ship_list.remove(ship)
-
-    # Convertir la liste mise à jour en JSON pour la sauvegarde dans la base de données
     updated_ship_list_json = json.dumps(current_ship_list)
 
-    # Mettre à jour la base de données avec la nouvelle liste de navettes
     c.execute(""
               "UPDATE users SET ship_list=?,"
               "money=money + ?,"
@@ -394,27 +374,21 @@ def sell_ship(username, ship):
     conn.close()
 
 
+# Remove ship
 def remove_ship(username, ship, remove_from, fight=False):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
 
-    if remove_from == "player":
-        # Récupérer la ship_list actuelle du joueur
+    if remove_from == "player":  # For player
         c.execute("SELECT ship_list FROM users WHERE username=?", (username,))
         current_ship_list_json = c.fetchone()[0]
-
-        # Charger la liste actuelle depuis JSON
         current_ship_list = json.loads(current_ship_list_json)
 
-        # Supprimer la navette spécifique
         if ship in current_ship_list:
             current_ship_list.remove(ship)
-
-        # Convertir la liste mise à jour en JSON pour la sauvegarde dans la base de données
         updated_ship_list_json = json.dumps(current_ship_list)
 
-        if fight is False:
-            # Mettre à jour la base de données avec la nouvelle liste de navettes
+        if fight is False:  # For update during battle
             c.execute("UPDATE users SET ship_list=? WHERE username=?",
                       (updated_ship_list_json, username))
             conn.commit()
@@ -422,8 +396,7 @@ def remove_ship(username, ship, remove_from, fight=False):
             user = get_user(username)
             st.session_state.ship_list = user[3]
 
-        elif fight is True:
-            # Mettre à jour la base de données avec la nouvelle liste de navettes
+        elif fight is True:  # During battle win
             c.execute("""
                 UPDATE users SET ship_list=?,
                 loose=loose + ?, 
@@ -432,23 +405,16 @@ def remove_ship(username, ship, remove_from, fight=False):
                       (updated_ship_list_json, 1, 1.00, 1.00, username))
             conn.commit()
 
-    elif remove_from == "enemies":
-        # Récupérer la ship_list actuelle du joueur
+    elif remove_from == "enemies":  # For enemies
         c.execute("SELECT enemy_list FROM users WHERE username=?", (username,))
         current_enemy_list_json = c.fetchone()[0]
-
-        # Charger la liste actuelle depuis JSON
         current_enemy_list = json.loads(current_enemy_list_json)
 
-        # Supprimer la navette spécifique
         if ship in current_enemy_list:
             current_enemy_list.remove(ship)
-
-        # Convertir la liste mise à jour en JSON pour la sauvegarde dans la base de données
         updated_enemy_list_json = json.dumps(current_enemy_list)
 
-        if fight is True:
-            # Mettre à jour la base de données avec la nouvelle liste de navettes
+        if fight is True:  # For battle loose
             c.execute(""
                       "UPDATE users SET enemy_list=?,"
                       "win = win + ?,"
@@ -456,7 +422,7 @@ def remove_ship(username, ship, remove_from, fight=False):
                       "WHERE username=?",
                       (updated_enemy_list_json, 1, 1.00, 1.00, username))
 
-        elif fight is False:
+        elif fight is False:  # During battle
             c.execute(""
                       "UPDATE users SET enemy_list=? WHERE username=?",
                       (updated_enemy_list_json, username))
@@ -493,7 +459,7 @@ def trade_token(username, number_battle):
     conn.close()
 
 
-# Grade
+# Grade commander
 def upgrade_grade_commander(username, amount, p_letter, p_number):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -517,6 +483,7 @@ def upgrade_grade_commander(username, amount, p_letter, p_number):
     conn.close()
 
 
+# Upgrade damage
 def upgrade_damage(username, amount, damage_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -537,6 +504,7 @@ def upgrade_damage(username, amount, damage_bonus):
     conn.close()
 
 
+# Upgrade resistance
 def upgrade_resistance(username, amount, resistance_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -557,6 +525,7 @@ def upgrade_resistance(username, amount, resistance_bonus):
     conn.close()
 
 
+# Upgrade agility
 def upgrade_agility(username, amount, agility_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -577,6 +546,7 @@ def upgrade_agility(username, amount, agility_bonus):
     conn.close()
 
 
+# Upgrade treasure
 def upgrade_treasure(username, amount, treasure_money_bonus, treasure_resource_bonus, treasure_artifact_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -608,6 +578,7 @@ def upgrade_treasure(username, amount, treasure_money_bonus, treasure_resource_b
     conn.close()
 
 
+# Upgrade commerce
 def upgrade_commerce(username, amount, commerce_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -628,6 +599,7 @@ def upgrade_commerce(username, amount, commerce_bonus):
     conn.close()
 
 
+# Upgrade navigation
 def upgrade_navigation(username, amount, navigation_price_bonus, navigation_time_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()
@@ -649,6 +621,7 @@ def upgrade_navigation(username, amount, navigation_price_bonus, navigation_time
     conn.close()
 
 
+# Upgrade token
 def upgrade_token(username, amount, token_bonus):
     conn = sqlite3.connect('user/users.db')
     c = conn.cursor()

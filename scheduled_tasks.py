@@ -24,7 +24,7 @@ def create_backup():
         backup_filename = f'users_{now}.db'
         backup_path = os.path.join(backup_dir, backup_filename)
         shutil.copy2(db_path, backup_path)
-        print(f'Sauvegarde créée : {backup_path}')
+        print(f'Backup created : {backup_path}')
 
         # Clean old backups if more than 10 present
         backups = sorted(os.listdir(backup_dir), key=lambda x: os.path.getmtime(os.path.join(backup_dir, x)))

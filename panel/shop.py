@@ -8,7 +8,7 @@ from starwalkers.func import roll, get_d_sym, get_cost, upgrade_fleet, upgrade
 
 
 def shop(username, df, value_list):
-    user_info = sql.get_user(username)
+    user_info = sql.get_user(username)  # Some elements are not necessary
     money = user_info[2]
     ship_list = user_info[3]
     enemy_list = user_info[4]
@@ -41,6 +41,7 @@ def shop(username, df, value_list):
     grade_token = user_info[31]
     token_bonus = user_info[32]
 
+    # Header
     st.header("🏪 Store")
 
     # Open case
@@ -53,9 +54,10 @@ def shop(username, df, value_list):
 
     if "buy_shuttles" not in st.session_state:
         st.session_state.buy_shuttles = False
-    if st.session_state.buy_shuttles is True:
+    if st.session_state.buy_shuttles is True and st.session_state.effect_sound:
         sound_effects.shuttles()
         st.session_state.buy_shuttles = False
+
     colopencase2.markdown("")
     if colopencase2.button(f"Open {open_case} case(s) for {open_case * ((10 + 10 * grade) * commerce_bonus)}$",
                            disabled=True if money < ((10 + 10 * grade) * commerce_bonus) or len(df) >= fleet_size else False):
@@ -71,6 +73,8 @@ def shop(username, df, value_list):
         colsellship1, colsellship2 = st.columns([2, 1], gap="small")
 
         if not df.empty:
+
+            # Select shuttles to sell
             sell = colsellship1.multiselect("Sell ship", df["Ship"].tolist(), label_visibility="collapsed",
                                             placeholder="Select shuttles for sale")
             price = sum(get_cost(ship) for ship in sell)
@@ -82,6 +86,7 @@ def shop(username, df, value_list):
                 st.toast("The shuttles have been sold!")
                 time.sleep(0.75) & st.rerun()
 
+            # Sell by value
             st.markdown("Sell shuttles of the same value")
             sorted_values = sorted(value_list, reverse=True)
             num_columns = 3
