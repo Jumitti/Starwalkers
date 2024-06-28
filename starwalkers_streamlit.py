@@ -13,15 +13,6 @@ from panel import ID_card, shop, community, battle
 
 import logging
 
-logging.basicConfig(
-    filename='streamlit_app.log',
-    level=logging.ERROR,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-
-version = "Version 3.1.12c"
-
 
 # Page redirection
 def login():
@@ -35,6 +26,17 @@ def register():
 def game():
     st.session_state.page = "game"
 
+
+# streamlit_app.log for error
+logging.basicConfig(
+    filename='streamlit_app.log',
+    level=logging.ERROR,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+# Version
+version = "Version 3.1.12c"
 
 # Database initialization
 sql.init_db()
@@ -81,6 +83,7 @@ with st.sidebar.expander("Info and help", expanded=False):
       - Streamlit app and maintain by Jumitti: [https://github.com/Jumitti](https://github.com/Jumitti)
     """)
 
+    # Audio settings
     if "ambient_sound" not in st.session_state:
         st.session_state.ambient_sound = False
         st.session_state.effect_sound = False
@@ -180,10 +183,12 @@ elif st.session_state.page == "register":
 elif st.session_state.page == "game":
     if st.session_state.ambient_sound:
         sound_effects.ambient()
+
     # Sidebar
     st.sidebar.divider()
-    if st.sidebar.button("🧹 Refresh"):
+    if st.sidebar.button("🧹 Refresh"):  # For refresh manually
         st.rerun()
+
     # Sidebar delete account
     if st.sidebar.toggle("🚮 Delete my account"):
         password = st.sidebar.text_input("Entrez votre mot de passe", type="password", label_visibility="collapsed",
