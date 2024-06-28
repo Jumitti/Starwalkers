@@ -36,7 +36,7 @@ logging.basicConfig(
 )
 
 # Version
-version = "Version 3.1.12e_fix1"
+version = "Version 3.1.12e_fix2"
 
 # Database initialization
 sql.init_db()
@@ -96,7 +96,7 @@ with st.sidebar.expander("Info and help", expanded=False):
             st.session_state.effect_sound = False
 
     # Documentation
-    st.sidebar.link_button("Documentation", "https://github.com/Jumitti/starwalkers/documentation/DOCUMENTATION.md")
+    st.sidebar.link_button("Documentation", "https://github.com/Jumitti/Starwalkers/blob/main/documentation/DOCUMENTATION.md")
 
 
 # Login page
