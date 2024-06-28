@@ -20,7 +20,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-version = "Version 3.1.12b"
+version = "Version 3.1.12c"
 
 
 # Page redirection
