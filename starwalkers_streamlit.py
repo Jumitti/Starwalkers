@@ -20,6 +20,8 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
+version = "Version 3.1.12b"
+
 
 # Page redirection
 def login():
@@ -94,6 +96,7 @@ with st.sidebar.expander("Info and help", expanded=False):
 # Login page
 if st.session_state.page == "login":
     try:
+        st.sidebar.write(version)
         col2.title("Login")
         if st.session_state.ambient_sound:
             sound_effects.ambient()
@@ -149,8 +152,8 @@ if st.session_state.page == "login":
 
 # Register page
 elif st.session_state.page == "register":
-
     try:
+        st.sidebar.write(version)
         col2.title("Register")
         if st.session_state.ambient_sound is True:
             sound_effects.ambient()
@@ -224,6 +227,8 @@ elif st.session_state.page == "game":
         except Exception as e:
             col2.error(f"Problem during sign out: {e}")
             logging.exception(f"Error: {e}")
+
+    st.sidebar.write(version)
 
     # Main ID card
     try:

@@ -108,7 +108,7 @@ def shop(username, df, value_list):
         if grade < 5:
             if colsu1.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade, 0.4, 1000)}$",
-                    disabled=True if money < upgrade(grade, 0.4, 1000) and grade < 5 else False, key="captain"):
+                    disabled=True if money < upgrade(grade, 0.4, 1000) or grade >= 5 else False, key="captain"):
                 sql.upgrade_grade_commander(username, upgrade(grade, 0.4, 1000), p_letter, p_number)
                 time.sleep(0.75) & st.rerun()
 
@@ -123,7 +123,7 @@ def shop(username, df, value_list):
         if grade_navigation < 10:
             if colsu3.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_navigation, 0.3, 500)}$",
-                    disabled=True if money < upgrade(grade_navigation, 0.3, 500) and grade_navigation < 10 else False,
+                    disabled=True if money < upgrade(grade_navigation, 0.3, 500) or grade_navigation >= 10 else False,
                     key="navigation"):
                 sql.upgrade_navigation(username, upgrade(grade_navigation, 0.3, 500), navigation_price_bonus, navigation_time_bonus)
                 time.sleep(0.75) & st.rerun()
@@ -134,7 +134,7 @@ def shop(username, df, value_list):
         if grade_damage < 10:
             if colsu4.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_damage, 0.3, 1000)}$",
-                    disabled=True if money < upgrade(grade_damage, 0.3, 1000) and grade_damage < 10 else False, key="damage"):
+                    disabled=True if money < upgrade(grade_damage, 0.3, 1000) or grade_damage >= 10 else False, key="damage"):
                 sql.upgrade_damage(username, upgrade(grade_damage, 0.3, 1000), damage_bonus)
                 time.sleep(0.75) & st.rerun()
 
@@ -142,40 +142,44 @@ def shop(username, df, value_list):
         if grade_resistance < 10:
             if colsu5.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_resistance, 0.3, 1000)}$",
-                    disabled=True if money < upgrade(grade_resistance, 0.3, 1000) and grade_resistance < 10 else False, key="resistance"):
+                    disabled=True if money < upgrade(grade_resistance, 0.3, 1000) or grade_resistance >= 10 else False, key="resistance"):
                 sql.upgrade_resistance(username, upgrade(grade_resistance, 0.3, 1000), resistance_bonus)
                 time.sleep(0.75) & st.rerun()
 
         colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="+9%" if grade_agility < 10 else "MAX")
-        if colsu6.button(
-                f"⬆️ Upgrade\n\n{upgrade(grade_agility, 0.3, 250)}$",
-                disabled=True if money < upgrade(grade_agility, 0.3, 250) and grade_agility < 10 else False, key="agility"):
-            sql.upgrade_agility(username, upgrade(grade_agility, 0.3, 250), agility_bonus)
-            time.sleep(0.75) & st.rerun()
+        if grade_agility < 10:
+            if colsu6.button(
+                    f"⬆️ Upgrade\n\n{upgrade(grade_agility, 0.3, 250)}$",
+                    disabled=True if money < upgrade(grade_agility, 0.3, 250) or grade_agility >= 10 else False, key="agility"):
+                sql.upgrade_agility(username, upgrade(grade_agility, 0.3, 250), agility_bonus)
+                time.sleep(0.75) & st.rerun()
 
         colsu7, colsu8, colsu9 = st.columns(3, gap="small")
 
         colsu7.metric(f"🛒 Interstellar Commerce", grade_commerce, delta="-5%" if grade_commerce < 10 else "MAX")
-        if colsu7.button(
-                f"⬆️ Upgrade\n\n{upgrade(grade_commerce, 0.4, 500)}$",
-                disabled=True if money < upgrade(grade_commerce, 0.4, 500) and grade_commerce < 10 else False,
-                key="commerce"):
-            sql.upgrade_commerce(username, upgrade(grade_commerce, 0.4, 500), commerce_bonus)
-            time.sleep(0.75) & st.rerun()
+        if grade_commerce < 10:
+            if colsu7.button(
+                    f"⬆️ Upgrade\n\n{upgrade(grade_commerce, 0.4, 500)}$",
+                    disabled=True if money < upgrade(grade_commerce, 0.4, 500) or grade_commerce >= 10 else False,
+                    key="commerce"):
+                sql.upgrade_commerce(username, upgrade(grade_commerce, 0.4, 500), commerce_bonus)
+                time.sleep(0.75) & st.rerun()
 
         colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta="M:5%|R:2.5%|A:1%" if grade_treasure < 10 else "MAX")
-        if colsu8.button(
-                f"⬆️ Upgrade\n\n{upgrade(grade_treasure, 0.3, 1500)}$",
-                disabled=True if money < upgrade(grade_treasure, 0.3, 1500) and grade_treasure < 10 else False,
-                key="treasure"):
-            sql.upgrade_treasure(username, upgrade(grade_treasure, 0.3, 1500), treasure_money_bonus,
-                                 treasure_resource_bonus, treasure_artifact_bonus)
-            time.sleep(0.75) & st.rerun()
+        if grade_treasure < 10:
+            if colsu8.button(
+                    f"⬆️ Upgrade\n\n{upgrade(grade_treasure, 0.3, 1500)}$",
+                    disabled=True if money < upgrade(grade_treasure, 0.3, 1500) or grade_treasure >= 10 else False,
+                    key="treasure"):
+                sql.upgrade_treasure(username, upgrade(grade_treasure, 0.3, 1500), treasure_money_bonus,
+                                     treasure_resource_bonus, treasure_artifact_bonus)
+                time.sleep(0.75) & st.rerun()
 
         colsu9.metric(f"⚡ Token Accelerator", grade_token, delta=1 if grade_token < 10 else "MAX")
-        if colsu9.button(
-                f"⬆️ Upgrade\n\n{upgrade(grade_token, 0.3, 250)}$",
-                disabled=True if money < upgrade(grade_token, 0.3, 250) and grade_token < 10 else False,
-                key="token"):
-            sql.upgrade_token(username, upgrade(grade_token, 0.3, 250), token_bonus)
-            time.sleep(0.75) & st.rerun()
+        if grade_token < 10:
+            if colsu9.button(
+                    f"⬆️ Upgrade\n\n{upgrade(grade_token, 0.3, 250)}$",
+                    disabled=True if money < upgrade(grade_token, 0.3, 250) or grade_token >= 10 else False,
+                    key="token"):
+                sql.upgrade_token(username, upgrade(grade_token, 0.3, 250), token_bonus)
+                time.sleep(0.75) & st.rerun()

@@ -64,4 +64,3 @@ daily_reward()
 
 while True:
     schedule.run_pending()
-    time.sleep(1)
