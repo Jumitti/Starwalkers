@@ -95,6 +95,9 @@ with st.sidebar.expander("Info and help", expanded=False):
             st.session_state.ambient_sound = False
             st.session_state.effect_sound = False
 
+    # Documentation
+    st.link_button("Documentation", "https://github.com/Jumitti/starwalkers/documentation/DOCUMENTATION.md")
+
 
 # Login page
 if st.session_state.page == "login":

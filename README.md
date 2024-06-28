@@ -11,14 +11,7 @@ Welcome to Starwalkers, a text-based space adventure where you command a fleet o
 - **Build Your Fleet:** Purchase and customize starships to enhance your fleet's capabilities.
 - **Tactical PvE Battles:** Challenge computer-controlled enemies in strategic text-based combat.
 - **Support Friends:** Send credits to friends to help them on their journey.
-
-## Security 🔐
-
-Starwalkers prioritizes the security of player accounts through the following measures:
-
-- **Password Encryption:** User passwords are securely encrypted using bcrypt hashing algorithm.
-- **Database Access:** Access to user data is managed through secure SQLite database connections.
-- **Authentication:** Players must create an account with a unique username and securely encrypted password.
+- **Progression and Upgrades:** Enhance your fleet's capabilities with future upgrade options.
 
 ## How to Play 🎮
 
@@ -38,15 +31,24 @@ Starwalkers prioritizes the security of player accounts through the following me
    - Explore different sectors to discover valuable resources and artifacts.
    - Engage in text-based PvE combat to earn rewards and progress.
 
+5. [**Documentation**](documentation/DOCUMENTATION.md)
+
 ## Future Updates 🔮
 
 We're continuously enhancing Starwalkers to provide a richer text-based gaming experience:
 
 - **Marketplace:** Soon, trade ships and resources with other players through the marketplace.
-- **Progression and Upgrades:** Enhance your fleet's capabilities with future upgrade options.
 - **Expanded Gameplay:** Look forward to more dynamic features and challenges.
 
 Stay tuned for updates!
+
+## Security 🔐
+
+Starwalkers prioritizes the security of player accounts through the following measures:
+
+- **Password Encryption:** User passwords are securely encrypted using bcrypt hashing algorithm.
+- **Database Access:** Access to user data is managed through secure SQLite database connections.
+- **Authentication:** Players must create an account with a unique username and securely encrypted password.
 
 ## Support 🛠️
 
