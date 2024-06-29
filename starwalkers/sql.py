@@ -94,8 +94,8 @@ def init_db():
         c.execute('ALTER TABLE users ADD COLUMN treasure_resource_bonus REAL DEFAULT 1.00')
         c.execute('UPDATE users SET treasure_resource_bonus = 1.00 WHERE treasure_resource_bonus IS NULL')
     if 'treasure_artifact_bonus' not in columns:
-        c.execute('ALTER TABLE users ADD COLUMN treasure_artifact_bonus REAL DEFAULT 1.00')
-        c.execute('UPDATE users SET treasure_artifact_bonus = 1.00 WHERE treasure_artifact_bonus IS NULL')
+        c.execute('ALTER TABLE users ADD COLUMN treasure_artifact_bonus REAL DEFAULT 0.0001')
+        c.execute('UPDATE users SET treasure_artifact_bonus = 0.0001 WHERE treasure_artifact_bonus IS NULL')
 
     if 'grade_commerce' not in columns:
         c.execute('ALTER TABLE users ADD COLUMN grade_commerce INTEGER DEFAULT 0')
@@ -171,7 +171,7 @@ def add_user(username, password):
               (
                   username, hashed_password, 100, '', '', 10, 0, 0, 0.00, 0,
                   0, 0, 0.5, -0.0004, 0, 0, 0, 1.00, 0, 1.00,
-                  0, 0.10, 0, 1.00, 1.00, 1.00, 0, 1.00, 0, 1.00,
+                  0, 0.10, 0, 1.00, 1.00, 0.0001, 0, 1.00, 0, 1.00,
                   0, 0, 0))
     conn.commit()
     conn.close()
@@ -559,9 +559,9 @@ def upgrade_treasure(username, amount, treasure_money_bonus, treasure_resource_b
     treasure_resource_bonus = decimal.Decimal(treasure_resource_bonus)
     new_treasure_resource_bonus = round(treasure_resource_bonus + decimal.Decimal('0.025'), 3)
 
-    decimal.getcontext().prec = 4
+    decimal.getcontext().prec = 6
     treasure_artifact_bonus = decimal.Decimal(treasure_artifact_bonus)
-    new_treasure_artifact_bonus = round(treasure_artifact_bonus + decimal.Decimal('0.01'), 3)
+    new_treasure_artifact_bonus = round(treasure_artifact_bonus + decimal.Decimal('0.00015'), 5)
 
     c.execute("""
         UPDATE users SET money = money - ?,

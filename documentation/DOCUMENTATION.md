@@ -145,8 +145,8 @@ The Interstellar Commerce grade discounts the price of shuttles by 5% per rank
 | 10    | MAX                       |
 
 ### 7. Treasure Hunter
-The Treasure Hunter rank increases the money earned (+5% per rank), the resources found (+2.5% per rank) and the probability of obtaining an Artifact (+0.01% per rank). Money and resources are multiplied by a factor between 1 and your rank.
-You have a 0.01% chance of finding an Artifact without a bonus. Up to you !
+The Treasure Hunter rank increases the money earned (+5% per rank), the resources found (+2.5% per rank) and the probability of obtaining an Artifact (+0.015% per rank). Money and resources are multiplied by a factor between 1 and your rank.
+You have a no chance of finding an Artifact without a bonus. Up to you !
 
 | Grade | Treasure Hunter ($) |
 |-------|---------------------|
