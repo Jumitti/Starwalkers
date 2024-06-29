@@ -109,7 +109,7 @@ def shop(username, df, value_list):
     with st.expander("✨ Skills and upgrade", expanded=True):
         colsu1, colsu2, colsu3 = st.columns(3, gap="small")
 
-        colsu1.metric(f"⭐ Galactic Commander", grade, delta=1 if grade < 5 else "MAX")
+        colsu1.metric(f"⭐ Galactic\n\nCommander", grade, delta=1 if grade < 5 else "MAX", help=f"See DOCUMENTATION in the left sidebar")
         if grade < 5:
             if colsu1.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade, 0.4, 1000)}$",
@@ -117,14 +117,14 @@ def shop(username, df, value_list):
                 sql.upgrade_grade_commander(username, upgrade(grade, 0.4, 1000), p_letter, p_number)
                 time.sleep(0.75) & st.rerun()
 
-        colsu2.metric(f"🚀 Armada Expansion", fleet_size, delta=5)
+        colsu2.metric(f"🚀 Armada\n\nExpansion", fleet_size, delta=5, help=f"See DOCUMENTATION in the left sidebar")
         if colsu2.button(
                 f"⬆️ Upgrade\n\n{upgrade_fleet(fleet_size)}$",
                 disabled=True if money < upgrade_fleet(fleet_size) else False):
             sql.upgrade_fleet_size(username, upgrade_fleet(fleet_size))
             time.sleep(0.75) & st.rerun()
 
-        colsu3.metric(f"🧭 Astral Navigator", grade_navigation, delta="-2.5% $ | -2 min" if grade_navigation < 10 else "Max", help='Hello')
+        colsu3.metric(f"🧭 Astral\n\nNavigator", grade_navigation, delta="-2.5% $ | -2 min" if grade_navigation < 10 else "Max", help=f"See DOCUMENTATION in the left sidebar")
         if grade_navigation < 10:
             if colsu3.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_navigation, 0.3, 500)}$",
@@ -135,7 +135,7 @@ def shop(username, df, value_list):
 
         colsu4, colsu5, colsu6 = st.columns(3, gap="small")
 
-        colsu4.metric(f"💥 Stellar Strike", grade_damage, delta="+2.5%" if grade_damage < 10 else "MAX")
+        colsu4.metric(f"💥 Stellar\n\nStrike", grade_damage, delta="+2.5%" if grade_damage < 10 else "MAX", help=f"See DOCUMENTATION in the left sidebar")
         if grade_damage < 10:
             if colsu4.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_damage, 0.3, 1000)}$",
@@ -143,7 +143,7 @@ def shop(username, df, value_list):
                 sql.upgrade_damage(username, upgrade(grade_damage, 0.3, 1000), damage_bonus)
                 time.sleep(0.75) & st.rerun()
 
-        colsu5.metric(f"🛡️ Cosmic Fortitude", grade_resistance, delta="-2.5%" if grade_resistance < 10 else "MAX")
+        colsu5.metric(f"🛡️ Cosmic\n\nFortitude", grade_resistance, delta="-2.5%" if grade_resistance < 10 else "MAX", help=f"See DOCUMENTATION in the left sidebar")
         if grade_resistance < 10:
             if colsu5.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_resistance, 0.3, 1000)}$",
@@ -151,7 +151,7 @@ def shop(username, df, value_list):
                 sql.upgrade_resistance(username, upgrade(grade_resistance, 0.3, 1000), resistance_bonus)
                 time.sleep(0.75) & st.rerun()
 
-        colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="+9%" if grade_agility < 10 else "MAX")
+        colsu6.metric(f"🪶 Celestial\n\nAgility", grade_agility, delta="+9%" if grade_agility < 10 else "MAX", help=f"See DOCUMENTATION in the left sidebar")
         if grade_agility < 10:
             if colsu6.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_agility, 0.3, 250)}$",
@@ -161,7 +161,7 @@ def shop(username, df, value_list):
 
         colsu7, colsu8, colsu9 = st.columns(3, gap="small")
 
-        colsu7.metric(f"🛒 Interstellar Commerce", grade_commerce, delta="-5%" if grade_commerce < 10 else "MAX")
+        colsu7.metric(f"🛒 Interstellar\n\nCommerce", grade_commerce, delta="-5%" if grade_commerce < 10 else "MAX", help=f"See DOCUMENTATION in the left sidebar")
         if grade_commerce < 10:
             if colsu7.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_commerce, 0.4, 500)}$",
@@ -170,7 +170,7 @@ def shop(username, df, value_list):
                 sql.upgrade_commerce(username, upgrade(grade_commerce, 0.4, 500), commerce_bonus)
                 time.sleep(0.75) & st.rerun()
 
-        colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta="M:5%|R:2.5%|A:1%" if grade_treasure < 10 else "MAX")
+        colsu8.metric(f"💎 Treasure\n\nHunter", grade_treasure, delta="M:5%|R:2.5%|A:1%" if grade_treasure < 10 else "MAX", help=f"See DOCUMENTATION in the left sidebar")
         if grade_treasure < 10:
             if colsu8.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_treasure, 0.3, 1500)}$",
@@ -180,7 +180,7 @@ def shop(username, df, value_list):
                                      treasure_resource_bonus, treasure_artifact_bonus)
                 time.sleep(0.75) & st.rerun()
 
-        colsu9.metric(f"⚡ Token Accelerator", grade_token, delta=1 if grade_token < 10 else "MAX")
+        colsu9.metric(f"⚡ Token\n\nAccelerator", grade_token, delta=1 if grade_token < 10 else "MAX", help=f"See DOCUMENTATION in the left sidebar")
         if grade_token < 10:
             if colsu9.button(
                     f"⬆️ Upgrade\n\n{upgrade(grade_token, 0.3, 250)}$",

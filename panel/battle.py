@@ -51,8 +51,8 @@ def battle(username, df):
         st.session_state.selected_ships_enemy = []
 
     # Begin the battle
-    if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_list) > 2 else False):
-        for _ in range(random.randint(1, 10)):
+    if colwar1.button("💥 Look for enemies !", disabled=True if len(enemy_list) > 2 else False, help="Fight between 3 and 10 enemies"):
+        for _ in range(random.randint(3, 10)):
             ship = roll(proba_letter=p_letter, proba_number=p_number)
             sql.add_ship(username, ship, "enemies")
         st.toast("⚔️ The enemies enter the battles")
@@ -77,7 +77,7 @@ def battle(username, df):
                     {'selector': 'td', 'props': [('max-width', '150px')]}
                 ]
             ).set_properties(**{'text-align': 'left'})
-            colfight1.write("Enemies list:")
+            colfight1.write("Fleet enemies")
             colfight1.dataframe(styled_df_enemy, use_container_width=True, hide_index=True)
 
             if not st.session_state.selected_ships_enemy:
@@ -99,7 +99,8 @@ def battle(username, df):
             shuttles_for_fight = colselectfight1.multiselect("Select shuttles to fight", df["Ship"].tolist(),
                                                              label_visibility="collapsed",
                                                              placeholder="Select shuttles to fight (max:4)",
-                                                             max_selections=4, default=df["Ship"].tolist()[:4])
+                                                             max_selections=4, default=df["Ship"].tolist()[:4],
+                                                             help="Select up to 4 shuttles for battle")
             value_player = int(sum(get_cost(ship) for ship in shuttles_for_fight) * random.uniform(1, damage_bonus))
             value_enemies = int(sum(get_cost(ship) for ship in styled_df_enemy["Ship"]))
             if colselectfight2.button(f"FIGHT !"):
@@ -146,7 +147,7 @@ def battle(username, df):
                     time.sleep(0.75) & st.rerun()
 
             # Leave (coward)
-            if colwar2.button("🏃‍♂️Leave fight"):
+            if colwar2.button("🏃‍♂️Leave fight", help="Enhance Celestial Agility to get away faster"):
                 if random.random() <= agility_bonus:
                     for ship in json.loads(enemy_list):
                         sql.remove_ship(username, ship, "enemies", fight=False)

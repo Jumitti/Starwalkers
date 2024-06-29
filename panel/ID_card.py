@@ -18,7 +18,9 @@ def display_stars(grade):
 
 # Reformatting money
 def format_money(value):
-    if value >= 1_000_000_000:
+    if value >= 1_000_000_000_000:
+        return f"{value / 1_000_000_000_000:.2f}T"
+    elif value >= 1_000_000_000:
         return f"{value / 1_000_000_000:.2f}B"
     elif value >= 1_000_000:
         return f"{value / 1_000_000:.2f}M"
@@ -69,8 +71,8 @@ def ID_card(username, display="community_info"):
         st.subheader("💲 Resources")
         colres1, colres2, colres3, colres4 = st.columns(4, gap="small")
         colres1.metric(f"💲 Money", f"{format_money(money)}$")
-        colres2.metric(f"💵 Money earned", f"{format_money(money_win)}$")
-        colres3.metric(f"🏷️ Money spent", f"{format_money(money_spent)}$")
+        colres2.metric(f"💵 Earned", f"{format_money(money_win)}$")
+        colres3.metric(f"🏷️ Spent", f"{format_money(money_spent)}$")
         colres4.metric(f"🪙 Trade token", f"{trade_token}")
         if display == "player_info":
             colres4.progress(battle_played)
@@ -112,18 +114,18 @@ def ID_card(username, display="community_info"):
         st.subheader("🏆 Skills and trophies")
         if display == "player_info":
             colsu1, colsu2, colsu3 = st.columns(3, gap="small")
-            colsu1.metric(f"⭐ Galactic Commander", grade, delta="" if grade < 5 else "MAX")
-            colsu2.metric(f"🚀 Armada Expansion", fleet_size)
-            colsu3.metric(f"🧭 Astral Navigator", grade_navigation, delta="" if grade_navigation < 10 else "MAX")
+            colsu1.metric(f"⭐ Galactic\n\nCommander", grade, delta="" if grade < 5 else "MAX", help="Improve purchased shuttles but increases the price")
+            colsu2.metric(f"🚀 Armada\n\nExpansion", fleet_size)
+            colsu3.metric(f"🧭 Astral\n\nNavigator", grade_navigation, delta="" if grade_navigation < 10 else "MAX", help="Reduces the cost of Open Space and speeds up the obtaining of resources")
 
             colsu4, colsu5, colsu6 = st.columns(3, gap="small")
-            colsu4.metric(f"💥 Stellar Strike", grade_damage, delta="" if grade_damage < 10 else "MAX")
-            colsu5.metric(f"🛡️ Cosmic Fortitude", grade_resistance, delta="" if grade_resistance < 10 else "MAX")
-            colsu6.metric(f"🪶 Celestial Agility", grade_agility, delta="" if grade_agility < 10 else "MAX")
+            colsu4.metric(f"💥 Stellar\n\nStrike", grade_damage, delta="" if grade_damage < 10 else "MAX", help="Increases damage inflict")
+            colsu5.metric(f"🛡️ Cosmic\n\nFortitude", grade_resistance, delta="" if grade_resistance < 10 else "MAX", help="Reduces damage taken")
+            colsu6.metric(f"🪶 Celestial\n\nAgility", grade_agility, delta="" if grade_agility < 10 else "MAX", help="Increases chances of escape")
 
             colsu7, colsu8, colsu9 = st.columns(3, gap="small")
-            colsu7.metric(f"🛒 Interstellar Commerce", grade_commerce, delta="" if grade_commerce < 10 else "MAX")
-            colsu8.metric(f"💎 Treasure Hunter", grade_treasure, delta="" if grade_treasure < 10 else "MAX")
-            colsu9.metric(f"⚡ Token Accelerator", grade_token, delta="" if grade_token < 10 else "MAX")
+            colsu7.metric(f"🛒 Interstellar\n\nCommerce", grade_commerce, delta="" if grade_commerce < 10 else "MAX", help="Reduces shuttle price")
+            colsu8.metric(f"💎 Treasure\n\nHunter", grade_treasure, delta="" if grade_treasure < 10 else "MAX", help="Increases money, resources and artifacts earned")
+            colsu9.metric(f"⚡ Token\n\nAccelerator", grade_token, delta="" if grade_token < 10 else "MAX", help="Accelerate Trade Token generation")
 
         return df, value_list

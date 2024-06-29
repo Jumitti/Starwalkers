@@ -57,13 +57,14 @@ def community(username):
             colsm1, colsm2 = st.columns([2, 1], gap="small")
 
             # Send money
-            send_money = colsm1.slider("💸 Send money", step=1, min_value=0,
+            send_money = colsm1.slider("💸 Send money (1 Trade Token required)", step=1, min_value=0,
                                        max_value=money if money > 0 else 1,
                                        disabled=True if money < 1 or selected_username == username else False)
 
             colsm2.markdown("")
             if colsm2.button(f"Send {send_money}$ to {selected_username}",
-                             disabled=True if money < 1 or selected_username == username or trade_token < 1 else False):
+                             disabled=True if money < 1 or selected_username == username or trade_token < 1 else False,
+                             help="Requires a Trade Token, fight battles to obtain one" if trade_token < 1 else ""):
                 sql.update_money(selected_username, send_money, context="receiver")
                 sql.update_money(username, send_money, context="sender")
                 st.toast(f"💸 {send_money}$ sends to {selected_username}")
