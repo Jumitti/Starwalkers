@@ -1,5 +1,7 @@
 # Starwalkers 🚀
 
+[![Buy me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20Coffee-☕-FFDD00?style=flat-square)](https://www.buymeacoffee.com/Jumitti)
+
 ![Logo Starwalkers](img/starwalkers_banner.png)
 
 ## Overview 🛸
